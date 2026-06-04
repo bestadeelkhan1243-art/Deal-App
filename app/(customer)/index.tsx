@@ -14,8 +14,12 @@ export default function CustomerHome() {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-white">
+      <ScrollView 
+        className="flex-1 bg-white" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* Header & Location */}
         <View className="px-6 pt-6 pb-2">
           <View className="flex-row justify-between items-center mb-6">
@@ -181,6 +185,6 @@ export default function CustomerHome() {
           </View>
         )}
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
