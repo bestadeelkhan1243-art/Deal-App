@@ -26,13 +26,19 @@ export const DealCard: React.FC<DealCardProps> = ({
           resizeMode="cover"
         />
         {badge && (
-          <View className="absolute top-4 left-4 bg-red-600 px-3 py-1.5 rounded-full shadow-sm">
+          <View className="absolute top-4 left-4 bg-brand px-3 py-1.5 rounded-full shadow-sm">
             <Text className="text-white font-bold text-xs">{badge}</Text>
           </View>
         )}
-        <View className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-sm">
-          <Ionicons name="heart-outline" size={20} color="#374151" />
-        </View>
+        <TouchableOpacity 
+          className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-sm"
+          onPress={(e) => {
+             e.stopPropagation();
+             if (onPress) onPress();
+          }}
+        >
+          <Ionicons name="bookmark" size={20} color="#ED1C24" />
+        </TouchableOpacity>
       </View>
       
       <View className="p-5">
