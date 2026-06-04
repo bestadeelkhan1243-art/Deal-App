@@ -12,10 +12,12 @@ interface DealCardProps {
   imageUrl?: string;
   badge?: string;
   onPress?: () => void;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
 }
 
 export const DealCard: React.FC<DealCardProps> = ({ 
-  title, store, distance, branchType, specificBranchName, imageSource, imageUrl, badge, onPress 
+  title, store, distance, branchType, specificBranchName, imageSource, imageUrl, badge, onPress, isSaved, onToggleSave 
 }) => {
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-5">
@@ -34,10 +36,10 @@ export const DealCard: React.FC<DealCardProps> = ({
           className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-sm"
           onPress={(e) => {
              e.stopPropagation();
-             if (onPress) onPress();
+             if (onToggleSave) onToggleSave();
           }}
         >
-          <Ionicons name="bookmark" size={20} color="#ED1C24" />
+          <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color="#ED1C24" />
         </TouchableOpacity>
       </View>
       

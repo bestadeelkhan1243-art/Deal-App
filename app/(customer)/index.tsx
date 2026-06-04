@@ -4,11 +4,13 @@ import { DealCard } from '../../components/ui/DealCard';
 import { Ionicons } from '@expo/vector-icons';
 import { useOfferStore, Offer } from '../../store/useOfferStore';
 import { useCouponStore } from '../../store/useCouponStore';
+import { useSavedStore } from '../../store/useSavedStore';
 import { Button } from '../../components/ui/Button';
 
 export default function CustomerHome() {
   const { offers } = useOfferStore();
   const { claimCoupon, hasClaimedOffer } = useCouponStore();
+  const { isSaved, toggleSave } = useSavedStore();
   const activeOffers = offers.filter(o => o.status === 'Active');
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
@@ -73,6 +75,8 @@ export default function CustomerHome() {
                   imageSource={i % 2 === 0 ? require('../../assets/images/pizza_deal.png') : require('../../assets/images/coffee_deal.png')}
                   badge={offer.discountPrice ? `${offer.discountPrice}` : "🔥 Flash Deal"}
                   onPress={() => setSelectedOffer(offer)}
+                  isSaved={isSaved(offer.id)}
+                  onToggleSave={() => toggleSave(offer.id)}
                 />
               </View>
             ))}
@@ -113,6 +117,8 @@ export default function CustomerHome() {
                   imageSource={i % 2 === 0 ? require('../../assets/images/pizza_deal.png') : require('../../assets/images/coffee_deal.png')}
                   badge={offer.discountPrice ? `${offer.discountPrice}` : "🔥 Deal"}
                   onPress={() => setSelectedOffer(offer)}
+                  isSaved={isSaved(offer.id)}
+                  onToggleSave={() => toggleSave(offer.id)}
                 />
               </View>
             ))
@@ -142,7 +148,9 @@ export default function CustomerHome() {
               <View className="p-6 -mt-8 bg-white rounded-t-3xl">
                 <View className="flex-row justify-between items-center mb-1">
                   <Text className="text-2xl font-black text-gray-900">{selectedOffer.title}</Text>
-                  <Ionicons name="bookmark-outline" size={24} color="#ED1C24" />
+                  <TouchableOpacity onPress={() => toggleSave(selectedOffer.id)}>
+                    <Ionicons name={isSaved(selectedOffer.id) ? "bookmark" : "bookmark-outline"} size={28} color="#ED1C24" />
+                  </TouchableOpacity>
                 </View>
                 
                 <Text className="text-gray-400 font-medium mb-6">Valid from 01.06.2026 to 05.06.2026</Text>
@@ -162,9 +170,12 @@ export default function CustomerHome() {
                     </View>
                     <View>
                       <Text className="font-bold text-gray-900">{selectedOffer.store}</Text>
-                      <View className="flex-row items-center mt-1">
+                      <View className="flex-row items-center mt-0.5 mb-1">
                         {[1,2,3,4,5].map(s => <Ionicons key={s} name="star" size={12} color="#EAB308" />)}
                       </View>
+                      <Text className="text-gray-500 text-xs font-medium flex-row items-center">
+                        <Ionicons name="location" size={10} color="#9CA3AF" /> {selectedOffer.branchType === 'Specific Location' && selectedOffer.specificBranchName ? selectedOffer.specificBranchName : '123 Main St, Damascus'} • {selectedOffer.distance}
+                      </Text>
                     </View>
                   </View>
                 </View>
