@@ -41,32 +41,33 @@ export const DealCard: React.FC<DealCardProps> = ({
         >
           <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color="#ED1C24" />
         </TouchableOpacity>
+
+        {/* Distance Badge overlaid on image */}
+        <View className="absolute bottom-4 right-4 bg-white/90 px-2 py-1 rounded-lg flex-row items-center shadow-sm">
+          <Ionicons name="location" size={14} color="#6b7280" />
+          <Text className="text-gray-700 font-bold text-xs ml-1">{distance}</Text>
+        </View>
       </View>
       
-      <View className="p-5">
-        <View className="flex-row justify-between items-start mb-2">
-          <Text className="text-xl font-bold text-gray-900 flex-1 pr-2">{title}</Text>
-          <View className="flex-row items-center bg-gray-50 px-2 py-1 rounded-lg">
-            <Ionicons name="location" size={14} color="#6b7280" />
-            <Text className="text-gray-500 font-medium text-sm ml-1">{distance}</Text>
-          </View>
+      <View className="p-5 flex-1 justify-between">
+        <View>
+          <Text className="text-xl font-bold text-gray-900 mb-1" numberOfLines={1}>{title}</Text>
+          <Text className="text-gray-500 font-medium mb-3" numberOfLines={1}>{store}</Text>
         </View>
-        
-        <Text className="text-gray-500 font-medium mb-3">{store}</Text>
 
         <View className="bg-gray-50 rounded-xl p-3 mb-4 flex-row items-center">
           <Ionicons name="business" size={16} color="#4b5563" />
-          <Text className="text-gray-700 font-medium ml-2 text-sm flex-1">
+          <Text className="text-gray-700 font-medium ml-2 text-sm flex-1" numberOfLines={1}>
             {branchType === 'Specific Location' && specificBranchName
               ? specificBranchName
               : "Valid at all locations"}
           </Text>
         </View>
         
-        <View className="flex-row justify-between items-center pt-4 border-t border-gray-100">
+        <View className="flex-row justify-between items-center pt-4 border-t border-gray-100 mt-auto">
           <View className="flex-row items-center">
             <Ionicons name="time-outline" size={16} color="#ef4444" />
-            <Text className="text-red-500 font-medium text-sm ml-1">Ends today</Text>
+            <Text className="text-red-500 font-medium text-sm ml-1" numberOfLines={1}>Ends today</Text>
           </View>
           <View className="bg-red-600 active:bg-red-700 px-5 py-2 rounded-xl">
             <Text className="text-white font-bold">Claim Deal</Text>

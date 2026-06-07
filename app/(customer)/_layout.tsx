@@ -81,6 +81,12 @@ export default function CustomerLayout() {
           ),
         }} 
       />
+      <Tabs.Screen 
+        name="personal" 
+        options={{
+          href: null,
+        }} 
+      />
     </Tabs>
   );
 }

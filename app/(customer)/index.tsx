@@ -14,6 +14,14 @@ export default function CustomerHome() {
   const activeOffers = offers.filter(o => o.status === 'Active');
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [followedStores, setFollowedStores] = useState<Record<string, boolean>>({});
+
+  const toggleFollow = (storeName: string) => {
+    setFollowedStores(prev => ({
+      ...prev,
+      [storeName]: !prev[storeName]
+    }));
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -164,20 +172,29 @@ export default function CustomerHome() {
 
                 {/* Rating & Location placeholder */}
                 <View className="flex-row items-center justify-between mb-8 pb-6 border-b border-gray-100">
-                  <View className="flex-row items-center">
+                  <View className="flex-row items-center flex-1 pr-2">
                     <View className="w-12 h-12 rounded-full bg-gray-200 mr-3 items-center justify-center">
                       <Ionicons name="person" size={20} color="#9ca3af" />
                     </View>
-                    <View>
-                      <Text className="font-bold text-gray-900">{selectedOffer.store}</Text>
+                    <View className="flex-1">
+                      <Text className="font-bold text-gray-900" numberOfLines={1}>{selectedOffer.store}</Text>
                       <View className="flex-row items-center mt-0.5 mb-1">
                         {[1,2,3,4,5].map(s => <Ionicons key={s} name="star" size={12} color="#EAB308" />)}
                       </View>
-                      <Text className="text-gray-500 text-xs font-medium flex-row items-center">
-                        <Ionicons name="location" size={10} color="#9CA3AF" /> {selectedOffer.branchType === 'Specific Location' && selectedOffer.specificBranchName ? selectedOffer.specificBranchName : '123 Main St, Damascus'} • {selectedOffer.distance}
+                      <Text className="text-gray-500 text-xs font-medium flex-row items-center" numberOfLines={1}>
+                        <Ionicons name="location" size={10} color="#9CA3AF" /> {selectedOffer.branchType === 'Specific Location' && selectedOffer.specificBranchName ? selectedOffer.specificBranchName : '123 Main St, Damascus'}
                       </Text>
                     </View>
                   </View>
+
+                  <TouchableOpacity 
+                    onPress={() => toggleFollow(selectedOffer.store)}
+                    className={`px-4 py-2 rounded-full border ${followedStores[selectedOffer.store] ? 'bg-white border-gray-300' : 'bg-black border-black'}`}
+                  >
+                    <Text className={`font-bold ${followedStores[selectedOffer.store] ? 'text-gray-700' : 'text-white'}`}>
+                      {followedStores[selectedOffer.store] ? 'Following' : 'Follow'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Action Buttons */}
