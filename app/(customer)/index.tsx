@@ -16,7 +16,7 @@ export default function CustomerHome() {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [followedStores, setFollowedStores] = useState<Record<string, boolean>>({});
   
-  const [viewMode, setViewMode] = useState<'list' | 'swipe'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'swipe'>('swipe');
   const [selectedStore, setSelectedStore] = useState('All');
   const [swipeIndex, setSwipeIndex] = useState(0);
 
