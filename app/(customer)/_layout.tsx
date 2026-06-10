@@ -85,6 +85,7 @@ export default function CustomerLayout() {
         name="personal" 
         options={{
           href: null,
+          tabBarButton: () => null,
         }} 
       />
     </Tabs>

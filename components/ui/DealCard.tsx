@@ -14,13 +14,18 @@ interface DealCardProps {
   onPress?: () => void;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  containerClassName?: string;
 }
 
 export const DealCard: React.FC<DealCardProps> = ({ 
-  title, store, distance, branchType, specificBranchName, imageSource, imageUrl, badge, onPress, isSaved, onToggleSave 
+  title, store, distance, branchType, specificBranchName, imageSource, imageUrl, badge, onPress, isSaved, onToggleSave, containerClassName 
 }) => {
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-5">
+    <TouchableOpacity 
+      activeOpacity={0.9} 
+      onPress={onPress} 
+      className={`bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-5 ${containerClassName || ''}`}
+    >
       <View className="relative w-full h-48">
         <Image 
           source={imageUrl ? { uri: imageUrl } : (imageSource || require('../../assets/images/pizza_deal.png'))} 
@@ -42,16 +47,17 @@ export const DealCard: React.FC<DealCardProps> = ({
           <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color="#ED1C24" />
         </TouchableOpacity>
 
-        {/* Distance Badge overlaid on image */}
-        <View className="absolute bottom-4 right-4 bg-white/90 px-2 py-1 rounded-lg flex-row items-center shadow-sm">
-          <Ionicons name="location" size={14} color="#6b7280" />
-          <Text className="text-gray-700 font-bold text-xs ml-1">{distance}</Text>
-        </View>
       </View>
       
       <View className="p-5 flex-1 justify-between">
         <View>
-          <Text className="text-xl font-bold text-gray-900 mb-1" numberOfLines={1}>{title}</Text>
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-xl font-bold text-gray-900 flex-1 pr-2" numberOfLines={1}>{title}</Text>
+            <View className="bg-gray-50 px-2.5 py-1 rounded-lg flex-row items-center shadow-sm">
+              <Ionicons name="location" size={12} color="#6b7280" />
+              <Text className="text-gray-500 font-bold text-[11px] ml-1">{distance}</Text>
+            </View>
+          </View>
           <Text className="text-gray-500 font-medium mb-3" numberOfLines={1}>{store}</Text>
         </View>
 

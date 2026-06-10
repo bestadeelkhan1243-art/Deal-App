@@ -103,7 +103,7 @@ export const useOfferStore = create<OfferState>()(
               await addDoc(collection(db, 'offers'), {
                 ...offer,
                 store: 'My Store', // Mock merchant store name
-                distance: '0.1 km'
+                distance: '1 Km'
               });
             } catch (error) {
               console.error("Error adding offer to Firestore:", error);
@@ -115,7 +115,7 @@ export const useOfferStore = create<OfferState>()(
                 ...offer, 
                 id: Math.random().toString(36).substring(2, 9),
                 store: 'My Store',
-                distance: '0.1 km'
+                distance: '1 Km'
               }, ...state.offers]
             }));
           }
