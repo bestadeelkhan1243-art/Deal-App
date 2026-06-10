@@ -314,7 +314,28 @@ export default function CustomerHome() {
                 </Animated.View>
               </View>
 
-
+              {/* Action Buttons */}
+              <View className="flex-row justify-center items-center space-x-12 mt-8">
+                <View className="items-center">
+                  <TouchableOpacity 
+                    onPress={() => swipeCard('down')}
+                    className="w-16 h-16 rounded-full bg-white border border-red-200 shadow-md items-center justify-center active:bg-red-50"
+                  >
+                    <Ionicons name="thumbs-down" size={32} color="#EF4444" />
+                  </TouchableOpacity>
+                  <Text className="text-xs text-red-500 font-bold mt-1">Deslike</Text>
+                </View>
+                
+                <View className="items-center">
+                  <TouchableOpacity 
+                    onPress={() => swipeCard('up')}
+                    className="w-16 h-16 rounded-full bg-white border border-green-200 shadow-md items-center justify-center active:bg-green-50"
+                  >
+                    <Ionicons name="thumbs-up" size={32} color="#10B981" />
+                  </TouchableOpacity>
+                  <Text className="text-xs text-green-500 font-bold mt-1">I like it</Text>
+                </View>
+              </View>
             </View>
           ) : (
             <View className="flex-1 justify-center items-center px-6 py-12">
