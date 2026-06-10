@@ -11,12 +11,13 @@ export default function CustomerHome() {
   const { offers } = useOfferStore();
   const { claimCoupon, hasClaimedOffer } = useCouponStore();
   const { isSaved, toggleSave } = useSavedStore();
-  const activeOffers = (offers || []).filter(o => o.status === 'Active');
-  
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [followedStores, setFollowedStores] = useState<Record<string, boolean>>({});
+  const [dislikedOffers, setDislikedOffers] = useState<Record<string, boolean>>({});
   
-  const [viewMode, setViewMode] = useState<'list' | 'swipe'>('swipe');
+  const activeOffers = (offers || []).filter(o => o.status === 'Active' && !dislikedOffers[o.id]);
+  
+  const [viewMode, setViewMode] = useState<'list' | 'swipe'>('list');
   const [selectedStore, setSelectedStore] = useState('All');
   const [swipeIndex, setSwipeIndex] = useState(0);
 
@@ -170,6 +171,10 @@ export default function CustomerHome() {
                     onPress={() => setSelectedOffer(offer)}
                     isSaved={isSaved(offer.id)}
                     onToggleSave={() => toggleSave(offer.id)}
+                    isLiked={isSaved(offer.id)}
+                    onLike={() => !isSaved(offer.id) && toggleSave(offer.id)}
+                    isDisliked={!!dislikedOffers[offer.id]}
+                    onDislike={() => setDislikedOffers(prev => ({ ...prev, [offer.id]: true }))}
                     containerClassName="h-[430px] mb-0"
                   />
                 </View>
@@ -213,6 +218,10 @@ export default function CustomerHome() {
                     onPress={() => setSelectedOffer(offer)}
                     isSaved={isSaved(offer.id)}
                     onToggleSave={() => toggleSave(offer.id)}
+                    isLiked={isSaved(offer.id)}
+                    onLike={() => !isSaved(offer.id) && toggleSave(offer.id)}
+                    isDisliked={!!dislikedOffers[offer.id]}
+                    onDislike={() => setDislikedOffers(prev => ({ ...prev, [offer.id]: true }))}
                   />
                 </View>
               ))
@@ -280,6 +289,10 @@ export default function CustomerHome() {
                     onPress={() => setSelectedOffer(filteredSwipeOffers[swipeIndex])}
                     isSaved={isSaved(filteredSwipeOffers[swipeIndex].id)}
                     onToggleSave={() => toggleSave(filteredSwipeOffers[swipeIndex].id)}
+                    isLiked={isSaved(filteredSwipeOffers[swipeIndex].id)}
+                    onLike={() => swipeCard('up')}
+                    isDisliked={!!dislikedOffers[filteredSwipeOffers[swipeIndex].id]}
+                    onDislike={() => swipeCard('down')}
                     containerClassName="h-[430px] mb-0"
                   />
                   
@@ -301,28 +314,7 @@ export default function CustomerHome() {
                 </Animated.View>
               </View>
 
-              {/* Action Buttons */}
-              <View className="flex-row justify-center items-center space-x-12 mt-8">
-                <View className="items-center">
-                  <TouchableOpacity 
-                    onPress={() => swipeCard('down')}
-                    className="w-16 h-16 rounded-full bg-white border border-red-200 shadow-md items-center justify-center active:bg-red-50"
-                  >
-                    <Ionicons name="close" size={32} color="#EF4444" />
-                  </TouchableOpacity>
-                  <Text className="text-xs text-red-500 font-bold mt-1">Deslike</Text>
-                </View>
-                
-                <View className="items-center">
-                  <TouchableOpacity 
-                    onPress={() => swipeCard('up')}
-                    className="w-16 h-16 rounded-full bg-white border border-green-200 shadow-md items-center justify-center active:bg-green-50"
-                  >
-                    <Ionicons name="heart" size={32} color="#10B981" />
-                  </TouchableOpacity>
-                  <Text className="text-xs text-green-500 font-bold mt-1">I like it</Text>
-                </View>
-              </View>
+
             </View>
           ) : (
             <View className="flex-1 justify-center items-center px-6 py-12">

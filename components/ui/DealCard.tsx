@@ -15,10 +15,15 @@ interface DealCardProps {
   isSaved?: boolean;
   onToggleSave?: () => void;
   containerClassName?: string;
+  isLiked?: boolean;
+  isDisliked?: boolean;
+  onLike?: () => void;
+  onDislike?: () => void;
 }
 
 export const DealCard: React.FC<DealCardProps> = ({ 
-  title, store, distance, branchType, specificBranchName, imageSource, imageUrl, badge, onPress, isSaved, onToggleSave, containerClassName 
+  title, store, distance, branchType, specificBranchName, imageSource, imageUrl, badge, onPress, isSaved, onToggleSave, containerClassName,
+  isLiked, isDisliked, onLike, onDislike
 }) => {
   return (
     <TouchableOpacity 
@@ -37,16 +42,44 @@ export const DealCard: React.FC<DealCardProps> = ({
             <Text className="text-white font-bold text-xs">{badge}</Text>
           </View>
         )}
-        <TouchableOpacity 
-          className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-sm"
-          onPress={(e) => {
-             e.stopPropagation();
-             if (onToggleSave) onToggleSave();
-          }}
-        >
-          <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color="#ED1C24" />
-        </TouchableOpacity>
+        
+        <View className="absolute top-4 right-4 flex-row space-x-2">
+          <TouchableOpacity 
+            className="bg-white/90 p-2.5 rounded-full shadow-sm items-center justify-center"
+            onPress={(e) => {
+               e.stopPropagation();
+               if (onToggleSave) onToggleSave();
+            }}
+          >
+            <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color="#ED1C24" />
+          </TouchableOpacity>
+        </View>
 
+        <View className="absolute bottom-4 right-4 flex-row space-x-2">
+          {(onDislike || isDisliked) && (
+            <TouchableOpacity 
+              className="bg-white/95 p-2 rounded-full shadow-md items-center justify-center"
+              onPress={(e) => {
+                 e.stopPropagation();
+                 if (onDislike) onDislike();
+              }}
+            >
+              <Ionicons name={isDisliked ? "thumbs-down" : "thumbs-down-outline"} size={20} color={isDisliked ? "#EF4444" : "#9CA3AF"} />
+            </TouchableOpacity>
+          )}
+
+          {(onLike || isLiked) && (
+            <TouchableOpacity 
+              className="bg-white/95 p-2 rounded-full shadow-md items-center justify-center"
+              onPress={(e) => {
+                 e.stopPropagation();
+                 if (onLike) onLike();
+              }}
+            >
+              <Ionicons name={isLiked ? "thumbs-up" : "thumbs-up-outline"} size={20} color={isLiked ? "#10B981" : "#9CA3AF"} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
       
       <View className="p-5 flex-1 justify-between">
