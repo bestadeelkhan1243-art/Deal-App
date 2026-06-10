@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Image, SafeAreaView, Animated, PanResponder } from 'react-native';
 import { DealCard } from '../../components/ui/DealCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ export default function CustomerHome() {
   const { offers } = useOfferStore();
   const { claimCoupon, hasClaimedOffer } = useCouponStore();
   const { isSaved, toggleSave } = useSavedStore();
-  const activeOffers = offers.filter(o => o.status === 'Active');
+  const activeOffers = (offers || []).filter(o => o.status === 'Active');
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [followedStores, setFollowedStores] = useState<Record<string, boolean>>({});
@@ -20,10 +20,15 @@ export default function CustomerHome() {
   const [selectedStore, setSelectedStore] = useState('All');
   const [swipeIndex, setSwipeIndex] = useState(0);
 
-  const uniqueStores = ['All', ...new Set(activeOffers.map(o => o.store))];
+  const uniqueStores = ['All', ...Array.from(new Set(activeOffers.map(o => o.store).filter(Boolean)))];
   const filteredSwipeOffers = activeOffers.filter(offer => selectedStore === 'All' || offer.store === selectedStore);
 
-  const position = React.useRef(new Animated.ValueXY()).current;
+  const position = useRef(new Animated.ValueXY()).current;
+  const stateRef = useRef({ swipeIndex, filteredSwipeOffers, isSaved });
+
+  useEffect(() => {
+    stateRef.current = { swipeIndex, filteredSwipeOffers, isSaved };
+  }, [swipeIndex, filteredSwipeOffers, isSaved]);
 
   const swipeCard = (direction: 'up' | 'down') => {
     const toValue = direction === 'up' ? -800 : 800;
@@ -32,24 +37,25 @@ export default function CustomerHome() {
       duration: 250,
       useNativeDriver: false,
     }).start(() => {
-      const currentOffer = filteredSwipeOffers[swipeIndex];
+      const { swipeIndex: currentIdx, filteredSwipeOffers: currentOffers } = stateRef.current;
+      const currentOffer = currentOffers[currentIdx];
       if (currentOffer) {
         if (direction === 'up') {
           if (!isSaved(currentOffer.id)) {
             toggleSave(currentOffer.id);
           }
         }
-        setSwipeIndex(prev => prev + 1);
+        setSwipeIndex(currentIdx + 1);
       }
       position.setValue({ x: 0, y: 0 });
     });
   };
 
-  const panResponder = React.useRef(
+  const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (event, gestureState) => {
-        position.setValue({ x: gestureState.dx, y: gestureState.dy });
+        position.setValue({ x: 0, y: gestureState.dy });
       },
       onPanResponderRelease: (event, gestureState) => {
         if (gestureState.dy < -120) {
@@ -260,7 +266,7 @@ export default function CustomerHome() {
                 {/* Animated Top Card */}
                 <Animated.View 
                   {...panResponder.panHandlers} 
-                  style={[{ transform: [{ translateY: position.y }] }, { width: '100%', height: '100%', position: 'absolute', zIndex: 10 }]}
+                  style={[position.getLayout(), { width: '100%', height: '100%', position: 'absolute', zIndex: 10 }]}
                 >
                   <DealCard 
                     title={filteredSwipeOffers[swipeIndex].title} 
