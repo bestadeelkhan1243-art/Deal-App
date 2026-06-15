@@ -6,44 +6,74 @@ export default function MerchantLayout() {
   return (
     <Tabs screenOptions={{ 
       headerShown: true,
-      tabBarActiveTintColor: '#dc2626', // Red for Look Deal branding
+      tabBarActiveTintColor: '#dc2626', // Brand Red
+      tabBarInactiveTintColor: '#6b7280',
+      tabBarShowLabel: true,
+      tabBarLabelStyle: { fontSize: 10, fontWeight: 'bold' },
       tabBarStyle: {
         borderTopWidth: 0,
         elevation: 10,
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowRadius: 10,
-        height: 60,
+        height: 65,
         paddingBottom: 10,
         paddingTop: 5,
+        backgroundColor: '#f9fafb'
       }
     }}>
       <Tabs.Screen 
-        name="index" 
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={24} color={color} />
-          ),
-        }} 
-      />
-      <Tabs.Screen 
         name="offers" 
         options={{
-          title: 'My Offers',
+          title: 'Offer',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "list" : "list-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "pricetag" : "pricetag-outline"} size={24} color={color} />
           ),
         }} 
       />
       <Tabs.Screen 
-        name="profile" 
+        name="add" 
         options={{
-          title: 'Store',
+          title: 'Add',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "add-square" : "add-square-outline"} size={24} color={color} />
+          ),
+        }} 
+      />
+      <Tabs.Screen 
+        name="search" 
+        options={{
+          title: 'Search',
+          tabBarIcon: ({ focused }) => (
+            <View className="bg-red-600 w-14 h-14 rounded-full justify-center items-center shadow-md mb-6 border-4 border-white">
+              <Ionicons name="search" size={24} color="white" />
+            </View>
+          ),
+          tabBarLabel: 'Search',
+        }} 
+      />
+      <Tabs.Screen 
+        name="chat" 
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "chatbubble" : "chatbubble-outline"} size={24} color={color} />
+          ),
+        }} 
+      />
+      <Tabs.Screen 
+        name="index" 
+        options={{
+          title: 'My Store',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "storefront" : "storefront-outline"} size={24} color={color} />
           ),
         }} 
+      />
+      {/* Hide the old profile tab if it existed, or rename to index */}
+      <Tabs.Screen 
+        name="profile" 
+        options={{ href: null }} 
       />
     </Tabs>
   );

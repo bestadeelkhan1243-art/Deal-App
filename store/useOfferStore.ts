@@ -28,6 +28,7 @@ export interface Offer {
 interface OfferState {
   offers: Offer[];
   addOffer: (offer: Omit<Offer, 'id' | 'store' | 'distance'>) => Promise<void>;
+  updateOffer: (id: string, updates: Partial<Offer>) => Promise<void>;
   toggleOfferStatus: (id: string) => Promise<void>;
   deleteOffer: (id: string) => Promise<void>;
   subscribeToOffers: () => (() => void) | undefined;
@@ -117,6 +118,23 @@ export const useOfferStore = create<OfferState>()(
                 store: 'My Store',
                 distance: '1 Km'
               }, ...state.offers]
+            }));
+          }
+        },
+
+        updateOffer: async (id, updates) => {
+          if (isFirebaseInitialized && db) {
+            try {
+              await updateDoc(doc(db, 'offers', id), updates);
+            } catch (error) {
+              console.error("Error updating offer in Firestore:", error);
+            }
+          } else {
+            // Fallback for Demo Mode
+            set((state) => ({
+              offers: state.offers.map(o => 
+                o.id === id ? { ...o, ...updates } : o
+              )
             }));
           }
         },

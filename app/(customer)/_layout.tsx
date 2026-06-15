@@ -58,7 +58,7 @@ export default function CustomerLayout() {
               shadowRadius: 5,
               elevation: 5,
             }}>
-              <Ionicons name="location" size={24} color="white" />
+              <Ionicons name="map-outline" size={24} color="white" />
             </View>
           ),
         }} 
