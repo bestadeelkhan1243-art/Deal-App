@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { Mail, Store, ShieldBan, Trash2, MapPin } from 'lucide-react';
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<any[]>([]);
@@ -15,7 +15,9 @@ export default function VendorsPage() {
 
   async function fetchVendors() {
     try {
-      const snapshot = await getDocs(collection(db, 'stores'));
+      // Only fetch merchants
+      const q = query(collection(db, 'users'), where('role', '==', 'merchant'));
+      const snapshot = await getDocs(q);
       const vendorData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -28,88 +30,107 @@ export default function VendorsPage() {
     }
   }
 
-  const toggleApproval = async (id: string, currentStatus: boolean) => {
-    try {
-      const vendorRef = doc(db, 'stores', id);
-      await updateDoc(vendorRef, {
-        isApproved: !currentStatus
-      });
-      // Refresh list locally
-      setVendors(vendors.map(v => v.id === id ? { ...v, isApproved: !currentStatus } : v));
-    } catch (error) {
-      console.error("Error updating approval status:", error);
+  async function handleBanVendor(userId: string, currentStatus: string) {
+    if (confirm(`Are you sure you want to ${currentStatus === 'banned' ? 'unban' : 'ban'} this vendor? They will not be able to log in.`)) {
+      try {
+        await updateDoc(doc(db, 'users', userId), {
+          status: currentStatus === 'banned' ? 'active' : 'banned'
+        });
+        fetchVendors();
+      } catch (error) {
+        console.error("Error banning vendor:", error);
+        alert("Failed to update vendor status.");
+      }
     }
-  };
+  }
+
+  async function handleDeleteVendor(userId: string) {
+    if (confirm("WARNING: Are you sure you want to permanently delete this vendor? All their data will be lost.")) {
+      try {
+        await deleteDoc(doc(db, 'users', userId));
+        fetchVendors();
+      } catch (error) {
+        console.error("Error deleting vendor:", error);
+        alert("Failed to delete vendor.");
+      }
+    }
+  }
 
   return (
-    <div>
-      <div className="sm:flex sm:items-center">
+    <div className="max-w-7xl mx-auto">
+      <div className="sm:flex sm:items-center mb-8 border-b border-gray-200 pb-5">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mb-4">Vendors</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            A list of all registered vendors including their store name, category, and approval status.
+          <h1 className="text-3xl font-black tracking-tight text-gray-900">Merchants & Vendors</h1>
+          <p className="mt-2 text-sm text-gray-500 font-medium">
+            Manage business accounts that publish deals on Look Deal.
           </p>
         </div>
       </div>
-      
-      <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Store Name</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Category</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span className="sr-only">Approve</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {loading ? (
-                    <tr><td colSpan={4} className="py-4 text-center text-sm text-gray-500">Loading...</td></tr>
-                  ) : vendors.length === 0 ? (
-                    <tr><td colSpan={4} className="py-4 text-center text-sm text-gray-500">No vendors found</td></tr>
-                  ) : (
-                    vendors.map((vendor) => (
-                      <tr key={vendor.id}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                          {vendor.name || 'Unnamed Store'}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{vendor.category || 'N/A'}</td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {vendor.isApproved ? (
-                            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                              Approved
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
-                              Pending
-                            </span>
-                          )}
-                        </td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <button
-                            onClick={() => toggleApproval(vendor.id, !!vendor.isApproved)}
-                            className={`flex items-center gap-1 ${vendor.isApproved ? 'text-red-600 hover:text-red-900' : 'text-blue-600 hover:text-blue-900'}`}
-                          >
-                            {vendor.isApproved ? (
-                              <><XCircle className="w-4 h-4" /> Revoke</>
-                            ) : (
-                              <><CheckCircle className="w-4 h-4" /> Approve</>
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {loading ? (
+          <div className="col-span-full flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ED1C24]"></div>
           </div>
-        </div>
+        ) : vendors.length === 0 ? (
+          <div className="col-span-full bg-white rounded-3xl border border-dashed border-gray-300 p-12 text-center">
+            <Store className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+            <h3 className="text-lg font-bold text-gray-900">No merchants found</h3>
+            <p className="text-gray-500 mt-1">There are no approved businesses yet.</p>
+          </div>
+        ) : (
+          vendors.map((vendor) => (
+            <div key={vendor.id} className={`col-span-1 flex flex-col rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden relative ${vendor.status === 'banned' ? 'opacity-75 grayscale' : ''}`}>
+              {vendor.status === 'banned' && (
+                <div className="absolute top-4 right-4 bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-md">BANNED</div>
+              )}
+              <div className="flex flex-1 flex-col p-8 items-center text-center">
+                <div className="h-20 w-20 rounded-full bg-gray-50 flex items-center justify-center mb-4 border border-gray-100">
+                  <Store className="h-10 w-10 text-[#ED1C24]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">{vendor.businessName || vendor.name || 'Unnamed Store'}</h3>
+                
+                {vendor.country && (
+                  <div className="flex items-center text-xs text-gray-500 mt-2 font-medium">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {vendor.country}
+                  </div>
+                )}
+                
+                <p className="text-sm text-gray-500 mt-2">{vendor.email || 'No email provided'}</p>
+                
+                <div className="mt-4 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
+                  {vendor.businessType || 'Retail Partner'}
+                </div>
+              </div>
+              <div className="bg-gray-50 border-t border-gray-100 p-4 grid grid-cols-3 gap-2">
+                <a
+                  href={`mailto:${vendor.email}`}
+                  className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-white transition-colors group"
+                >
+                  <Mail className="h-5 w-5 text-gray-400 group-hover:text-gray-600 mb-1" />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase">Email</span>
+                </a>
+                <button
+                  onClick={() => handleBanVendor(vendor.id, vendor.status)}
+                  className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-white transition-colors group"
+                >
+                  <ShieldBan className={`h-5 w-5 mb-1 ${vendor.status === 'banned' ? 'text-green-500' : 'text-orange-400 group-hover:text-orange-500'}`} />
+                  <span className={`text-[10px] font-bold uppercase ${vendor.status === 'banned' ? 'text-green-600' : 'text-orange-500'}`}>
+                    {vendor.status === 'banned' ? 'Unban' : 'Ban'}
+                  </span>
+                </button>
+                <button
+                  onClick={() => handleDeleteVendor(vendor.id)}
+                  className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-red-50 transition-colors group"
+                >
+                  <Trash2 className="h-5 w-5 text-gray-400 group-hover:text-[#ED1C24] mb-1" />
+                  <span className="text-[10px] font-bold text-gray-500 group-hover:text-[#ED1C24] uppercase">Delete</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
