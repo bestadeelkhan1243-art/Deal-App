@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { safeStorage } from './safeStorage';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db, auth, isFirebaseInitialized } from '../config/firebase';
 
@@ -75,7 +75,7 @@ export const useMerchantStore = create<MerchantState>()(
     }),
     {
       name: 'merchant-profile-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => safeStorage),
     }
   )
 );

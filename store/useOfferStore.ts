@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { safeStorage } from './safeStorage';
 import { db, isFirebaseInitialized } from '../config/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { auth } from '../config/firebase';
@@ -186,7 +186,7 @@ export const useOfferStore = create<OfferState>()(
     },
     {
       name: 'offer-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => safeStorage),
       partialize: (state) => ({ offers: state.offers }), // Persist only offers
     }
   )
