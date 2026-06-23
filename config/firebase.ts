@@ -10,12 +10,12 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 
 // Replace with your client's live Firebase project credentials when ready
 const firebaseConfig = {
-  apiKey: "PLACEHOLDER_API_KEY",
-  authDomain: "placeholder-look-deal.firebaseapp.com",
-  projectId: "placeholder-look-deal",
-  storageBucket: "placeholder-look-deal.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:0000000000000000000000"
+  apiKey: "AIzaSyAphpYNHNemEC-gKefc2YhSu_AxBaPd7sA",
+  authDomain: "dealapp-dfbb3.firebaseapp.com",
+  projectId: "dealapp-dfbb3",
+  storageBucket: "dealapp-dfbb3.firebasestorage.app",
+  messagingSenderId: "845567250283",
+  appId: "1:845567250283:web:181a63e102d482ea42862e"
 };
 
 let app;

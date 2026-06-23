@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db, auth, isFirebaseInitialized } from '../config/firebase';
 
 export interface MerchantProfile {
   firstName: string;
@@ -17,7 +19,8 @@ export interface MerchantProfile {
 
 interface MerchantState {
   profile: MerchantProfile;
-  updateProfile: (updates: Partial<MerchantProfile>) => void;
+  updateProfile: (updates: Partial<MerchantProfile>) => Promise<void>;
+  fetchProfile: () => Promise<void>;
 }
 
 const initialProfile: MerchantProfile = {
@@ -35,11 +38,40 @@ const initialProfile: MerchantProfile = {
 
 export const useMerchantStore = create<MerchantState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       profile: initialProfile,
-      updateProfile: (updates) => set((state) => ({ 
-        profile: { ...state.profile, ...updates } 
-      })),
+      updateProfile: async (updates) => {
+        const currentUser = auth?.currentUser;
+        const newProfile = { ...get().profile, ...updates };
+        
+        set({ profile: newProfile });
+
+        if (isFirebaseInitialized && db && currentUser) {
+          try {
+            await setDoc(doc(db, 'stores', currentUser.uid), {
+              ...newProfile,
+              name: newProfile.businessName || "Unnamed Store",
+              category: newProfile.businessType || "Retail",
+              // We do not overwrite isApproved if it exists, use merge
+            }, { merge: true });
+          } catch (error) {
+            console.error("Error saving merchant profile to Firestore:", error);
+          }
+        }
+      },
+      fetchProfile: async () => {
+        const currentUser = auth?.currentUser;
+        if (isFirebaseInitialized && db && currentUser) {
+          try {
+            const docSnap = await getDoc(doc(db, 'stores', currentUser.uid));
+            if (docSnap.exists()) {
+              set({ profile: { ...initialProfile, ...docSnap.data() } as MerchantProfile });
+            }
+          } catch (error) {
+            console.error("Error fetching merchant profile:", error);
+          }
+        }
+      },
     }),
     {
       name: 'merchant-profile-storage',

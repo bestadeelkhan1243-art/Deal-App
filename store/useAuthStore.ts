@@ -7,6 +7,8 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 type UserRole = 'customer' | 'merchant' | 'admin' | null;
 
@@ -25,12 +27,23 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => {
   // Subscribe to real-time auth changes if Firebase is connected
   if (isFirebaseInitialized && auth) {
-    onAuthStateChanged(auth, (firebaseUser) => {
+    onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Safe role resolution for the pitch:
-        // If email contains "merchant", log in as merchant, otherwise customer.
-        const role: UserRole = firebaseUser.email?.includes('merchant') ? 'merchant' : 'customer';
-        set({ isLoggedIn: true, user: firebaseUser, role, isLoading: false });
+        let resolvedRole: UserRole = 'customer'; // Default
+        
+        // Fetch role from Firestore
+        if (db) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+            if (userDoc.exists()) {
+              resolvedRole = userDoc.data().role as UserRole;
+            }
+          } catch (error) {
+            console.warn("Failed to fetch user role from Firestore:", error);
+          }
+        }
+        
+        set({ isLoggedIn: true, user: firebaseUser, role: resolvedRole, isLoading: false });
       } else {
         set({ isLoggedIn: false, user: null, role: null, isLoading: false });
       }
@@ -64,14 +77,23 @@ export const useAuthStore = create<AuthState>((set) => {
     },
 
     signUpWithEmail: async (email, password, role) => {
-      if (!isFirebaseInitialized) {
+      if (!isFirebaseInitialized || !db) {
         // Fallback for Demo Mode
         set({ isLoggedIn: true, role, user: null });
         return { success: true };
       }
       set({ isLoading: true });
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Save user role and details to Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          email: user.email,
+          role: role,
+          createdAt: new Date().toISOString()
+        });
+        
         return { success: true };
       } catch (error: any) {
         set({ isLoading: false });

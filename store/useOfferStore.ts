@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db, isFirebaseInitialized } from '../config/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { auth } from '../config/firebase';
+import { useMerchantStore } from './useMerchantStore';
 
 export interface Offer {
   id: string;
@@ -99,12 +101,14 @@ export const useOfferStore = create<OfferState>()(
         offers: initialMockOffers,
 
         addOffer: async (offer) => {
-          if (isFirebaseInitialized && db) {
+          if (isFirebaseInitialized && db && auth.currentUser) {
             try {
+              const merchantName = useMerchantStore.getState().profile.businessName || "Unnamed Store";
               await addDoc(collection(db, 'offers'), {
                 ...offer,
-                store: 'My Store', // Mock merchant store name
-                distance: '1 Km'
+                store: merchantName,
+                merchantId: auth.currentUser.uid,
+                distance: '1 Km', // Placeholder until GPS is implemented
               });
             } catch (error) {
               console.error("Error adding offer to Firestore:", error);
