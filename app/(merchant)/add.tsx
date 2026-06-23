@@ -5,9 +5,11 @@ import { useOfferStore } from '../../store/useOfferStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import { usePopup } from '../../components/ui/PopupProvider';
 
 export default function MerchantAddOffer() {
   const { addOffer } = useOfferStore();
+  const { showPopup } = usePopup();
   
   // Form State
   const [newTitle, setNewTitle] = useState('');
@@ -75,8 +77,15 @@ export default function MerchantAddOffer() {
       setRequiresCoupon(false); setCouponCode('');
       setDiscountType('Percentage'); setLimitType('Unlimited');
       
-      // Navigate back to offers list
-      router.push('/(merchant)/offers');
+      // Show success popup
+      showPopup('success', 'Offer Published!', 'Your deal is now live for all shoppers to see.');
+      
+      // Navigate back to offers list after delay
+      setTimeout(() => {
+        router.push('/(merchant)/offers');
+      }, 1000);
+    } else {
+      showPopup('error', 'Missing Fields', 'Please provide a title and a discount value.');
     }
   };
 

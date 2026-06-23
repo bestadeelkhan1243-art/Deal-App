@@ -1,158 +1,200 @@
-import { View, Text, TouchableOpacity, TextInput, StatusBar, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, StatusBar, KeyboardAvoidingView, Platform, ActivityIndicator, Image, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../store/useAuthStore";
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from "react";
+import { usePopup } from "../components/ui/PopupProvider";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Index() {
   const router = useRouter();
   const { loginWithEmail, signUpWithEmail, isLoading } = useAuthStore();
+  const { showPopup } = usePopup();
   
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<'customer' | 'merchant'>('customer');
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setProfilePic(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
 
   const handleAuth = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.");
+      showPopup('error', 'Missing Fields', 'Please enter both your email and password.');
+      return;
+    }
+
+    if (isRegistering && selectedRole === 'merchant' && !businessName.trim()) {
+      showPopup('error', 'Business Name Required', 'Please provide your business name to register as a merchant.');
       return;
     }
 
     let result;
     if (isRegistering) {
-      result = await signUpWithEmail(email, password, selectedRole);
+      result = await signUpWithEmail(email, password, selectedRole, {
+        profilePic: profilePic || undefined,
+        businessName: selectedRole === 'merchant' ? businessName.trim() : undefined
+      });
     } else {
       result = await loginWithEmail(email, password);
     }
 
     if (result.success) {
-      // The onAuthStateChanged listener in useAuthStore will automatically 
-      // navigate via an auth guard if you have one, or we can force navigate here.
-      // Assuming role is successfully fetched for login or passed for signup:
+      if (isRegistering) {
+        showPopup('success', 'Welcome!', 'Your account has been successfully created.');
+      }
       const roleToNavigate = isRegistering ? selectedRole : (email.includes('merchant') ? 'merchant' : 'customer');
-      router.replace(roleToNavigate === 'customer' ? '/(customer)' : '/(merchant)');
+      // Wait for popup animation to start before routing
+      setTimeout(() => {
+        router.replace(roleToNavigate === 'customer' ? '/(customer)' : '/(merchant)');
+      }, 500);
     } else {
-      Alert.alert("Error", result.error || "Authentication failed.");
+      showPopup('error', 'Authentication Failed', result.error || "An unknown error occurred.");
     }
   };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-brand">
       <StatusBar barStyle="light-content" />
-      
-      {/* Top Graphic Area */}
-      <View className="flex-1 items-center justify-center pt-10">
-        <View className="w-24 h-24 bg-white/20 rounded-3xl items-center justify-center mb-6 transform rotate-3">
-          <View className="w-24 h-24 bg-white/30 rounded-3xl items-center justify-center absolute -rotate-6" />
-          <Ionicons name="pricetags" size={48} color="white" />
-        </View>
-        <Text className="text-white text-5xl font-black tracking-tighter mb-2 shadow-sm">
-          L<Text className="text-accent-yellow">oo</Text>k Deal
-        </Text>
-        <Text className="text-white/80 text-lg font-medium tracking-wide">Find the best offers around you</Text>
-      </View>
-
-      {/* Bottom Sheet Area */}
-      <View className="bg-white rounded-t-[40px] px-8 pt-10 pb-12 shadow-2xl">
-        <Text className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          {isRegistering ? "Create Account" : "Welcome Back"}
-        </Text>
-
-        {isRegistering && (
-          <View className="flex-row mb-6 bg-gray-100 p-1 rounded-xl">
-            <TouchableOpacity 
-              onPress={() => setSelectedRole('customer')}
-              className={`flex-1 py-3 rounded-lg items-center ${selectedRole === 'customer' ? 'bg-white shadow-sm' : ''}`}
-            >
-              <Text className={`font-bold ${selectedRole === 'customer' ? 'text-brand' : 'text-gray-500'}`}>Customer</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => setSelectedRole('merchant')}
-              className={`flex-1 py-3 rounded-lg items-center ${selectedRole === 'merchant' ? 'bg-white shadow-sm' : ''}`}
-            >
-              <Text className={`font-bold ${selectedRole === 'merchant' ? 'text-brand' : 'text-gray-500'}`}>Merchant</Text>
-            </TouchableOpacity>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        {/* Top Graphic Area */}
+        <View className="items-center justify-center pt-20 pb-10">
+          <View className="w-24 h-24 bg-white/20 rounded-[32px] items-center justify-center mb-6 transform rotate-3 shadow-lg shadow-black/10">
+            <View className="w-24 h-24 bg-white/30 rounded-[32px] items-center justify-center absolute -rotate-6" />
+            <Ionicons name="pricetags" size={48} color="white" />
           </View>
-        )}
-
-        <View className="space-y-4">
-          <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
-            <Ionicons name="mail-outline" size={20} color="#9ca3af" />
-            <TextInput 
-              placeholder="Email address" 
-              placeholderTextColor="#9ca3af"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              className="flex-1 ml-3 text-base text-gray-900 font-medium"
-            />
-          </View>
-
-          <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
-            <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" />
-            <TextInput 
-              placeholder="Password" 
-              placeholderTextColor="#9ca3af"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              className="flex-1 ml-3 text-base text-gray-900 font-medium"
-            />
-          </View>
-          
-          <TouchableOpacity 
-            onPress={handleAuth}
-            disabled={isLoading}
-            className={`w-full ${isLoading ? 'bg-brand/70' : 'bg-brand'} rounded-2xl py-4 items-center shadow-md mb-6 shadow-brand/30`}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white text-lg font-bold">
-                {isRegistering ? "Sign Up" : "Continue with Email"}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {!isRegistering && (
-          <>
-            <View className="flex-row items-center my-6">
-              <View className="flex-1 h-px bg-gray-200" />
-              <Text className="px-4 text-gray-400 font-medium text-sm uppercase tracking-wider">Or continue with</Text>
-              <View className="flex-1 h-px bg-gray-200" />
-            </View>
-
-            <View className="flex-row space-x-4 mb-8">
-              <TouchableOpacity 
-                className="flex-1 bg-white border border-gray-200 rounded-2xl py-3.5 flex-row items-center justify-center shadow-sm"
-              >
-                <Ionicons name="logo-google" size={20} color="#EA4335" />
-                <Text className="text-gray-700 font-bold ml-2">Google</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                className="flex-1 bg-white border border-gray-200 rounded-2xl py-3.5 flex-row items-center justify-center shadow-sm"
-              >
-                <Ionicons name="logo-apple" size={20} color="black" />
-                <Text className="text-gray-700 font-bold ml-2">Apple</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-
-        <View className="flex-row justify-center mt-2">
-          <Text className="text-gray-500 font-medium">
-            {isRegistering ? "Already have an account? " : "New to Look Deal? "}
+          <Text className="text-white text-5xl font-black tracking-tighter mb-2 drop-shadow-md">
+            L<Text className="text-accent-yellow">oo</Text>k Deal
           </Text>
-          <TouchableOpacity onPress={() => setIsRegistering(!isRegistering)}>
-            <Text className="text-brand font-bold">
-              {isRegistering ? "Log In" : "Register Now"}
-            </Text>
-          </TouchableOpacity>
+          <Text className="text-white/80 text-lg font-medium tracking-wide">Premium Deals & Offers</Text>
         </View>
-      </View>
+
+        {/* Bottom Sheet Area */}
+        <View className="flex-1 bg-white rounded-t-[40px] px-8 pt-10 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+          <Text className="text-3xl font-black text-gray-900 mb-8 text-center tracking-tight">
+            {isRegistering ? "Create Account" : "Welcome Back"}
+          </Text>
+
+          {isRegistering && (
+            <View className="flex-row mb-6 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+              <TouchableOpacity 
+                onPress={() => setSelectedRole('customer')}
+                className={`flex-1 py-3.5 rounded-xl items-center ${selectedRole === 'customer' ? 'bg-white shadow-sm border border-gray-100' : ''}`}
+              >
+                <Text className={`font-bold ${selectedRole === 'customer' ? 'text-brand text-base' : 'text-gray-400 text-sm'}`}>Shopper</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setSelectedRole('merchant')}
+                className={`flex-1 py-3.5 rounded-xl items-center ${selectedRole === 'merchant' ? 'bg-white shadow-sm border border-gray-100' : ''}`}
+              >
+                <Text className={`font-bold ${selectedRole === 'merchant' ? 'text-brand text-base' : 'text-gray-400 text-sm'}`}>Merchant</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View className="space-y-4 mb-8">
+            {isRegistering && (
+              <View className="items-center mb-4">
+                <TouchableOpacity 
+                  onPress={pickImage}
+                  className="w-24 h-24 bg-gray-50 border-2 border-dashed border-gray-200 rounded-full items-center justify-center overflow-hidden relative"
+                >
+                  {profilePic ? (
+                    <Image source={{ uri: profilePic }} className="w-full h-full" resizeMode="cover" />
+                  ) : (
+                    <>
+                      <Ionicons name="camera" size={32} color="#9ca3af" />
+                      <Text className="text-[10px] text-gray-400 font-bold mt-1">ADD PHOTO</Text>
+                    </>
+                  )}
+                  {profilePic && (
+                    <View className="absolute bottom-0 w-full bg-black/50 py-1 items-center">
+                      <Text className="text-[10px] text-white font-bold">EDIT</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {isRegistering && selectedRole === 'merchant' && (
+              <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4">
+                <Ionicons name="storefront-outline" size={20} color="#9ca3af" />
+                <TextInput 
+                  placeholder="Business Name" 
+                  placeholderTextColor="#9ca3af"
+                  value={businessName}
+                  onChangeText={setBusinessName}
+                  className="flex-1 ml-3 text-base text-gray-900 font-medium"
+                />
+              </View>
+            )}
+
+            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4">
+              <Ionicons name="mail-outline" size={20} color="#9ca3af" />
+              <TextInput 
+                placeholder="Email address" 
+                placeholderTextColor="#9ca3af"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                className="flex-1 ml-3 text-base text-gray-900 font-medium"
+              />
+            </View>
+
+            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4">
+              <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" />
+              <TextInput 
+                placeholder="Password" 
+                placeholderTextColor="#9ca3af"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                className="flex-1 ml-3 text-base text-gray-900 font-medium"
+              />
+            </View>
+            
+            <TouchableOpacity 
+              onPress={handleAuth}
+              disabled={isLoading}
+              className={`w-full ${isLoading ? 'bg-brand/70' : 'bg-brand'} rounded-2xl py-4 items-center shadow-lg shadow-brand/40 mt-2`}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white text-lg font-black tracking-wide">
+                  {isRegistering ? "CREATE ACCOUNT" : "LOGIN TO CONTINUE"}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-row justify-center pb-12">
+            <Text className="text-gray-500 font-medium">
+              {isRegistering ? "Already have an account? " : "New to Look Deal? "}
+            </Text>
+            <TouchableOpacity onPress={() => setIsRegistering(!isRegistering)}>
+              <Text className="text-brand font-black">
+                {isRegistering ? "Log In" : "Register Now"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

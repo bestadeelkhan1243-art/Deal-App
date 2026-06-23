@@ -3,10 +3,12 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import { useMerchantStore } from '../../store/useMerchantStore';
 import { useRouter } from 'expo-router';
+import { usePopup } from '../../components/ui/PopupProvider';
 
 export default function MerchantOnboarding() {
   const { profile, updateProfile } = useMerchantStore();
   const router = useRouter();
+  const { showPopup } = usePopup();
 
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);
@@ -47,8 +49,10 @@ export default function MerchantOnboarding() {
       businessAddress,
       businessEmail
     });
-    Alert.alert("Success!", "Your merchant profile has been successfully saved.");
-    router.back();
+    showPopup('success', 'Profile Updated', 'Your merchant profile has been successfully saved.');
+    setTimeout(() => {
+      router.back();
+    }, 1000);
   };
 
   return (

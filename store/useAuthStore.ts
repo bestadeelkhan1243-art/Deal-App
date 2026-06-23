@@ -19,7 +19,7 @@ interface AuthState {
   isLoading: boolean;
   loginAs: (role: UserRole) => void;
   loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUpWithEmail: (email: string, password: string, role: UserRole) => Promise<{ success: boolean; error?: string }>;
+  signUpWithEmail: (email: string, password: string, role: UserRole, extraData?: { profilePic?: string, businessName?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setLoading: (isLoading: boolean) => void;
 }
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>((set) => {
       }
     },
 
-    signUpWithEmail: async (email, password, role) => {
+    signUpWithEmail: async (email, password, role, extraData) => {
       if (!isFirebaseInitialized || !db) {
         // Fallback for Demo Mode
         set({ isLoggedIn: true, role, user: null });
@@ -88,11 +88,16 @@ export const useAuthStore = create<AuthState>((set) => {
         const user = userCredential.user;
         
         // Save user role and details to Firestore
-        await setDoc(doc(db, 'users', user.uid), {
+        const userData: any = {
           email: user.email,
           role: role,
           createdAt: new Date().toISOString()
-        });
+        };
+
+        if (extraData?.profilePic) userData.profilePic = extraData.profilePic;
+        if (extraData?.businessName) userData.businessName = extraData.businessName;
+
+        await setDoc(doc(db, 'users', user.uid), userData);
         
         return { success: true };
       } catch (error: any) {

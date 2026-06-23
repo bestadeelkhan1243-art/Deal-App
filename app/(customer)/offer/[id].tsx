@@ -4,14 +4,20 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useOfferStore } from '../../../store/useOfferStore';
 import { useSavedStore } from '../../../store/useSavedStore';
+import { usePopup } from '../../../components/ui/PopupProvider';
 
 export default function OfferDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { offers } = useOfferStore();
   const { isSaved, toggleSave } = useSavedStore();
+  const { showPopup } = usePopup();
 
   const offer = offers.find(o => o.id === id);
+
+  const handleClaim = () => {
+    showPopup('success', 'Deal Claimed!', 'Present this at the store to redeem your offer.');
+  };
 
   if (!offer) {
     return (
@@ -117,18 +123,15 @@ export default function OfferDetails() {
       </ScrollView>
 
       {/* Sticky Bottom Action Buttons */}
-      <View className="flex-row justify-between space-x-3 px-5 py-4 bg-white border-t border-gray-100 pb-8">
-        <TouchableOpacity className="flex-1 bg-[#f9fafb] border border-gray-100 shadow-sm rounded-3xl py-4 items-center justify-center">
-          <Ionicons name="arrow-redo-outline" size={26} color="black" />
-          <Text className="text-black font-bold mt-1 text-sm">Share</Text>
+      <View className="flex-row justify-between space-x-2 px-5 py-4 bg-white border-t border-gray-100 pb-8">
+        <TouchableOpacity className="bg-[#f9fafb] border border-gray-100 shadow-sm rounded-2xl p-4 items-center justify-center aspect-square">
+          <Ionicons name="arrow-redo-outline" size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity className="flex-1 bg-[#f9fafb] border border-gray-100 shadow-sm rounded-3xl py-4 items-center justify-center">
-          <Ionicons name="navigate-outline" size={26} color="black" style={{ transform: [{ rotate: '45deg' }] }} />
-          <Text className="text-black font-bold mt-1 text-sm">Get Location</Text>
+        <TouchableOpacity onPress={() => toggleSave(offer.id)} className="bg-[#f9fafb] border border-gray-100 shadow-sm rounded-2xl p-4 items-center justify-center aspect-square">
+          <Ionicons name={isSaved(offer.id) ? "bookmark" : "bookmark-outline"} size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => toggleSave(offer.id)} className="flex-1 bg-[#f9fafb] border border-gray-100 shadow-sm rounded-3xl py-4 items-center justify-center">
-          <Ionicons name={isSaved(offer.id) ? "bookmark" : "bookmark-outline"} size={26} color="black" />
-          <Text className="text-black font-bold mt-1 text-sm">Save</Text>
+        <TouchableOpacity onPress={handleClaim} className="flex-1 bg-brand shadow-lg shadow-brand/40 rounded-2xl py-4 items-center justify-center ml-2">
+          <Text className="text-white font-black tracking-widest text-lg uppercase">Claim Deal</Text>
         </TouchableOpacity>
       </View>
     </View>
