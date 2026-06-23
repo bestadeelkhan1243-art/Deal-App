@@ -1,15 +1,40 @@
-import { View, Text, TouchableOpacity, TextInput, StatusBar, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, StatusBar, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../store/useAuthStore";
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from "react";
 
 export default function Index() {
   const router = useRouter();
-  const { loginAs } = useAuthStore();
+  const { loginWithEmail, signUpWithEmail, isLoading } = useAuthStore();
+  
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'customer' | 'merchant'>('customer');
 
-  const handleLogin = (role: 'customer' | 'merchant') => {
-    loginAs(role);
-    router.replace(role === 'customer' ? '/(customer)' : '/(merchant)');
+  const handleAuth = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter both email and password.");
+      return;
+    }
+
+    let result;
+    if (isRegistering) {
+      result = await signUpWithEmail(email, password, selectedRole);
+    } else {
+      result = await loginWithEmail(email, password);
+    }
+
+    if (result.success) {
+      // The onAuthStateChanged listener in useAuthStore will automatically 
+      // navigate via an auth guard if you have one, or we can force navigate here.
+      // Assuming role is successfully fetched for login or passed for signup:
+      const roleToNavigate = isRegistering ? selectedRole : (email.includes('merchant') ? 'merchant' : 'customer');
+      router.replace(roleToNavigate === 'customer' ? '/(customer)' : '/(merchant)');
+    } else {
+      Alert.alert("Error", result.error || "Authentication failed.");
+    }
   };
 
   return (
@@ -30,7 +55,26 @@ export default function Index() {
 
       {/* Bottom Sheet Area */}
       <View className="bg-white rounded-t-[40px] px-8 pt-10 pb-12 shadow-2xl">
-        <Text className="text-3xl font-bold text-gray-900 mb-8 text-center">Welcome Back</Text>
+        <Text className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          {isRegistering ? "Create Account" : "Welcome Back"}
+        </Text>
+
+        {isRegistering && (
+          <View className="flex-row mb-6 bg-gray-100 p-1 rounded-xl">
+            <TouchableOpacity 
+              onPress={() => setSelectedRole('customer')}
+              className={`flex-1 py-3 rounded-lg items-center ${selectedRole === 'customer' ? 'bg-white shadow-sm' : ''}`}
+            >
+              <Text className={`font-bold ${selectedRole === 'customer' ? 'text-brand' : 'text-gray-500'}`}>Customer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setSelectedRole('merchant')}
+              className={`flex-1 py-3 rounded-lg items-center ${selectedRole === 'merchant' ? 'bg-white shadow-sm' : ''}`}
+            >
+              <Text className={`font-bold ${selectedRole === 'merchant' ? 'text-brand' : 'text-gray-500'}`}>Merchant</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View className="space-y-4">
           <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
@@ -38,52 +82,74 @@ export default function Index() {
             <TextInput 
               placeholder="Email address" 
               placeholderTextColor="#9ca3af"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              className="flex-1 ml-3 text-base text-gray-900 font-medium"
+            />
+          </View>
+
+          <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
+            <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" />
+            <TextInput 
+              placeholder="Password" 
+              placeholderTextColor="#9ca3af"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
               className="flex-1 ml-3 text-base text-gray-900 font-medium"
             />
           </View>
           
           <TouchableOpacity 
-            onPress={() => handleLogin('customer')}
-            className="w-full bg-brand rounded-2xl py-4 items-center shadow-md mb-6 shadow-brand/30"
+            onPress={handleAuth}
+            disabled={isLoading}
+            className={`w-full ${isLoading ? 'bg-brand/70' : 'bg-brand'} rounded-2xl py-4 items-center shadow-md mb-6 shadow-brand/30`}
           >
-            <Text className="text-white text-lg font-bold">Continue with Email</Text>
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white text-lg font-bold">
+                {isRegistering ? "Sign Up" : "Continue with Email"}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row items-center my-6">
-          <View className="flex-1 h-px bg-gray-200" />
-          <Text className="px-4 text-gray-400 font-medium text-sm uppercase tracking-wider">Or continue with</Text>
-          <View className="flex-1 h-px bg-gray-200" />
-        </View>
+        {!isRegistering && (
+          <>
+            <View className="flex-row items-center my-6">
+              <View className="flex-1 h-px bg-gray-200" />
+              <Text className="px-4 text-gray-400 font-medium text-sm uppercase tracking-wider">Or continue with</Text>
+              <View className="flex-1 h-px bg-gray-200" />
+            </View>
 
-        <View className="flex-row space-x-4 mb-8">
-          <TouchableOpacity 
-            onPress={() => handleLogin('customer')}
-            className="flex-1 bg-white border border-gray-200 rounded-2xl py-3.5 flex-row items-center justify-center shadow-sm"
-          >
-            <Ionicons name="logo-google" size={20} color="#EA4335" />
-            <Text className="text-gray-700 font-bold ml-2">Google</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={() => handleLogin('customer')}
-            className="flex-1 bg-white border border-gray-200 rounded-2xl py-3.5 flex-row items-center justify-center shadow-sm"
-          >
-            <Ionicons name="logo-apple" size={20} color="black" />
-            <Text className="text-gray-700 font-bold ml-2">Apple</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity 
-          onPress={() => handleLogin('merchant')}
-          className="bg-red-50 border border-red-100 rounded-2xl py-4 items-center mb-6"
-        >
-          <Text className="text-brand font-bold text-base">I am a Dealer / Merchant</Text>
-        </TouchableOpacity>
+            <View className="flex-row space-x-4 mb-8">
+              <TouchableOpacity 
+                className="flex-1 bg-white border border-gray-200 rounded-2xl py-3.5 flex-row items-center justify-center shadow-sm"
+              >
+                <Ionicons name="logo-google" size={20} color="#EA4335" />
+                <Text className="text-gray-700 font-bold ml-2">Google</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                className="flex-1 bg-white border border-gray-200 rounded-2xl py-3.5 flex-row items-center justify-center shadow-sm"
+              >
+                <Ionicons name="logo-apple" size={20} color="black" />
+                <Text className="text-gray-700 font-bold ml-2">Apple</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         <View className="flex-row justify-center mt-2">
-          <Text className="text-gray-500 font-medium">New to Look Deal? </Text>
-          <TouchableOpacity>
-            <Text className="text-brand font-bold">Register Now</Text>
+          <Text className="text-gray-500 font-medium">
+            {isRegistering ? "Already have an account? " : "New to Look Deal? "}
+          </Text>
+          <TouchableOpacity onPress={() => setIsRegistering(!isRegistering)}>
+            <Text className="text-brand font-bold">
+              {isRegistering ? "Log In" : "Register Now"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
