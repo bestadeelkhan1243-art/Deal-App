@@ -26,14 +26,19 @@ let isFirebaseInitialized = false;
 // Check if credentials are still placeholder templates
 const isPlaceholder = firebaseConfig.apiKey === "PLACEHOLDER_API_KEY";
 
+import { Platform } from 'react-native';
+
 if (!isPlaceholder) {
   try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     
-    // Wire up AsyncStorage persistence for persistent React Native sessions
-    auth = initializeAuth(app, {
-      persistence: getReactNativePersistence(AsyncStorage)
-    });
+    if (Platform.OS === 'web') {
+      auth = getAuth(app);
+    } else {
+      auth = initializeAuth(app, {
+        persistence: getReactNativePersistence(AsyncStorage)
+      });
+    }
     
     db = getFirestore(app);
     isFirebaseInitialized = true;
