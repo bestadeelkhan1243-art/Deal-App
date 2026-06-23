@@ -51,10 +51,10 @@ export default function CustomerMap() {
             >
               {/* Pulse effect */}
               {isSelected && (
-                <View className="absolute w-12 h-12 bg-red-600/20 rounded-full animate-ping" />
+                <View className="absolute w-14 h-14 bg-brand/20 rounded-full animate-ping" />
               )}
               {/* Main Pin */}
-              <View className={`${isSelected ? 'bg-red-600 scale-125' : 'bg-gray-950'} p-3 rounded-full shadow-lg border-2 border-white`}>
+              <View className={`${isSelected ? 'bg-brand scale-125 shadow-brand/40' : 'bg-gray-900'} p-3 rounded-full shadow-lg border-2 border-white`}>
                 <Ionicons 
                   name={i === 0 ? "pizza" : "cafe"} 
                   size={18} 
@@ -80,7 +80,7 @@ export default function CustomerMap() {
                 key={cat} 
                 onPress={() => setSelectedCategory(cat)}
                 className={`px-5 py-3 rounded-full shadow-sm mr-2 flex-row items-center border ${
-                  isSelected ? 'bg-red-600 border-red-600' : 'bg-white border-gray-100'
+                  isSelected ? 'bg-brand border-brand shadow-brand/30' : 'bg-white/90 backdrop-blur-sm border-white'
                 }`}
               >
                 <Text className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat}</Text>
@@ -117,24 +117,24 @@ export default function CustomerMap() {
               className="bg-white p-4 rounded-[28px] shadow-lg border border-gray-100 mr-4 flex-row items-center overflow-hidden"
             >
               {/* Deal Icon Box */}
-              <View className="w-20 h-20 bg-red-50 rounded-2xl items-center justify-center mr-4 border border-red-100">
-                <Ionicons name={i === 0 ? "pizza" : "cafe"} size={36} color="#dc2626" />
+              <View className="w-20 h-20 bg-red-50 rounded-2xl items-center justify-center mr-4 border border-red-100 shadow-sm">
+                <Ionicons name={i === 0 ? "pizza" : "cafe"} size={36} color="#ED1C24" />
               </View>
 
               {/* Deal Info */}
               <View className="flex-1">
                 <View className="flex-row justify-between items-center mb-1">
                   <Text className="text-gray-400 font-bold text-xs uppercase tracking-wider">{offer.distance}</Text>
-                  <View className="bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
-                    <Text className="text-red-700 font-extrabold text-[10px]">{offer.discountPrice}</Text>
+                  <View className="bg-brand px-2 py-1 rounded-md shadow-sm shadow-brand/20">
+                    <Text className="text-white font-extrabold text-[10px]">{offer.discountPrice}</Text>
                   </View>
                 </View>
                 <Text className="text-gray-900 font-bold text-base mb-1" numberOfLines={1}>{offer.title}</Text>
                 <Text className="text-gray-500 font-medium text-xs mb-2" numberOfLines={1}>{offer.store}</Text>
                 
                 <View className="flex-row items-center">
-                  <Ionicons name="time" size={12} color="#dc2626" />
-                  <Text className="text-red-600 font-medium text-[11px] ml-1">Expires in 2 hours</Text>
+                  <Ionicons name="time" size={12} color="#ED1C24" />
+                  <Text className="text-brand font-bold text-[11px] ml-1">Expires in 2 hours</Text>
                 </View>
               </View>
             </TouchableOpacity>

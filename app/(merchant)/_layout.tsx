@@ -70,10 +70,10 @@ export default function MerchantLayout() {
           ),
         }} 
       />
-      {/* Hide the old profile tab if it existed, or rename to index */}
+      {/* Hide the edit-profile tab */}
       <Tabs.Screen 
-        name="profile" 
-        options={{ href: null }} 
+        name="edit-profile" 
+        options={{ href: null, title: 'Edit Profile' }} 
       />
     </Tabs>
   );

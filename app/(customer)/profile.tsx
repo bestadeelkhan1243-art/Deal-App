@@ -16,12 +16,10 @@ export default function CustomerProfile() {
       if (router.canDismiss()) {
         router.dismissAll();
       }
-      router.replace('/');
     }
   };
 
   const menuItems = [
-    { title: 'Profile Information', icon: 'person-outline', route: '/(customer)/personal' },
     { title: 'Land', icon: 'earth-outline' },
     { title: 'Location', icon: 'location-outline' },
     { title: 'Help & contact', icon: 'help-circle-outline' },
@@ -38,6 +36,22 @@ export default function CustomerProfile() {
 
       <ScrollView className="flex-1 bg-white p-6" showsVerticalScrollIndicator={false}>
         
+        {/* Profile Header */}
+        <View className="items-center mb-8 mt-4">
+          <View className="w-24 h-24 bg-gray-100 rounded-full items-center justify-center mb-4 border border-gray-200">
+            <Ionicons name="person" size={40} color="#9CA3AF" />
+          </View>
+          <Text className="text-2xl font-bold text-gray-900 mb-1">Look Deal</Text>
+          <Text className="text-gray-500 mb-4">Lookdeal@gmail.com</Text>
+          
+          <TouchableOpacity 
+            onPress={() => router.push('/(customer)/personal')}
+            className="bg-red-50 px-6 py-2 rounded-full border border-red-100"
+          >
+            <Text className="text-red-600 font-bold text-sm">Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Menu Options */}
         <View className="bg-gray-50 rounded-2xl overflow-hidden mb-6">
           {menuItems.map((item, index) => (

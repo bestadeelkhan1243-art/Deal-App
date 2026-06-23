@@ -83,65 +83,76 @@ export default function MerchantAddOffer() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      className="flex-1 bg-white"
+      className="flex-1 bg-gray-50"
     >
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-6 pt-6 mb-4" contentContainerStyle={{ paddingBottom: 100 }}>
-        <View className="mb-6">
-          <Text className="text-3xl font-extrabold text-gray-900">Create Deal</Text>
-          <Text className="text-gray-500 font-medium">Add a new offer to your store.</Text>
+        <View className="mb-8 mt-2">
+          <Text className="text-4xl font-extrabold text-gray-900 tracking-tight">Create Deal</Text>
+          <Text className="text-gray-500 font-medium text-base mt-1">Publish a new offer to your store.</Text>
         </View>
 
-        <Text className="text-gray-700 font-bold mb-2 ml-1">Offer Title *</Text>
-        <TextInput 
-          value={newTitle} onChangeText={setNewTitle}
-          placeholder="e.g. 20% Off All Desserts"
-          className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5 font-medium"
-        />
+        <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-6">
+          <Text className="text-gray-900 font-bold mb-2 ml-1 text-base">Offer Title <Text className="text-brand">*</Text></Text>
+          <TextInput 
+            value={newTitle} onChangeText={setNewTitle}
+            placeholder="e.g. 20% Off All Desserts"
+            placeholderTextColor="#9ca3af"
+            className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-5 font-medium text-gray-900 text-base"
+          />
 
-        <Text className="text-gray-700 font-bold mb-2 ml-1">Description</Text>
-        <TextInput 
-          value={newDesc} onChangeText={setNewDesc}
-          placeholder="Details about the offer..."
-          multiline numberOfLines={3}
-          className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5 font-medium text-left"
-          style={{ textAlignVertical: 'top' }}
-        />
+          <Text className="text-gray-900 font-bold mb-2 ml-1 text-base">Description</Text>
+          <TextInput 
+            value={newDesc} onChangeText={setNewDesc}
+            placeholder="Details about the offer..."
+            placeholderTextColor="#9ca3af"
+            multiline numberOfLines={3}
+            className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-2 font-medium text-left text-gray-900 text-base min-h-[100px]"
+            style={{ textAlignVertical: 'top' }}
+          />
+        </View>
 
-        <Text className="text-gray-700 font-bold mb-2 ml-1">Product Image (Optional)</Text>
-        <TouchableOpacity 
-          onPress={pickImage}
-          className="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300 mb-6 items-center justify-center h-32"
-        >
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} className="w-full h-full rounded-lg" resizeMode="cover" />
-          ) : (
-            <View className="items-center">
-              <Ionicons name="camera-outline" size={28} color="#9ca3af" />
-              <Text className="text-gray-500 font-medium mt-2">Tap to select photo</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-6">
+          <Text className="text-gray-900 font-bold mb-2 ml-1 text-base">Product Image</Text>
+          <Text className="text-gray-500 font-medium mb-3 ml-1 text-xs">Add an image to make your deal stand out</Text>
 
-        <Text className="text-gray-700 font-bold mb-2 ml-1">Discount Details *</Text>
-        <View className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5">
-          <View className="flex-row bg-gray-200 p-1 rounded-lg mb-4">
+          <TouchableOpacity 
+            onPress={pickImage}
+            className="bg-gray-50 p-1 border-2 border-dashed border-gray-200 rounded-3xl items-center justify-center h-40 overflow-hidden"
+          >
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} className="w-full h-full rounded-[20px]" resizeMode="cover" />
+            ) : (
+              <View className="items-center">
+                <View className="w-12 h-12 bg-white rounded-full items-center justify-center shadow-sm mb-3">
+                  <Ionicons name="camera" size={24} color="#ED1C24" />
+                </View>
+                <Text className="text-gray-600 font-bold">Tap to select photo</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-6">
+          <Text className="text-gray-900 font-bold mb-4 ml-1 text-base">Discount Details <Text className="text-brand">*</Text></Text>
+          <View className="flex-row bg-gray-50 p-1.5 rounded-2xl mb-4 border border-gray-100">
             <TouchableOpacity 
-              className={`flex-1 py-2 items-center rounded-md ${discountType === 'Percentage' ? 'bg-white shadow-sm' : ''}`}
+              className={`flex-1 py-3 items-center rounded-xl ${discountType === 'Percentage' ? 'bg-white shadow-sm border border-gray-100' : ''}`}
               onPress={() => setDiscountType('Percentage')}
             >
-              <Text className={`font-bold ${discountType === 'Percentage' ? 'text-gray-900' : 'text-gray-500'}`}>Percentage (%)</Text>
+              <Text className={`font-bold ${discountType === 'Percentage' ? 'text-brand' : 'text-gray-500'}`}>Percentage (%)</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              className={`flex-1 py-2 items-center rounded-md ${discountType === 'Price' ? 'bg-white shadow-sm' : ''}`}
+              className={`flex-1 py-3 items-center rounded-xl ${discountType === 'Price' ? 'bg-white shadow-sm border border-gray-100' : ''}`}
               onPress={() => setDiscountType('Price')}
             >
-              <Text className={`font-bold ${discountType === 'Price' ? 'text-gray-900' : 'text-gray-500'}`}>Fixed Price ($)</Text>
+              <Text className={`font-bold ${discountType === 'Price' ? 'text-brand' : 'text-gray-500'}`}>Fixed Price ($)</Text>
             </TouchableOpacity>
           </View>
           <TextInput 
             value={discountValue} onChangeText={setDiscountValue} keyboardType="numeric"
             placeholder={discountType === 'Percentage' ? "e.g. 50" : "e.g. 10"}
-            className="bg-white p-4 rounded-xl border border-gray-200 font-medium"
+            placeholderTextColor="#9ca3af"
+            className="bg-gray-50 p-4 rounded-2xl border border-gray-100 font-medium text-gray-900 text-base"
           />
         </View>
 
@@ -202,27 +213,29 @@ export default function MerchantAddOffer() {
           className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 font-medium"
         />
 
-        <View className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8">
-          <View className="flex-row justify-between items-center mb-2">
+        <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-8">
+          <View className="flex-row justify-between items-center">
             <View>
-              <Text className="text-gray-900 font-bold">Require Coupon</Text>
-              <Text className="text-gray-500 text-xs">Shoppers must claim code</Text>
+              <Text className="text-gray-900 font-bold text-base">Require Coupon</Text>
+              <Text className="text-gray-500 text-xs mt-1">Shoppers must claim code</Text>
             </View>
             <Switch 
               value={requiresCoupon} 
               onValueChange={setRequiresCoupon} 
-              trackColor={{ false: '#d1d5db', true: '#fca5a5' }}
-              thumbColor={requiresCoupon ? '#dc2626' : '#f3f4f6'}
+              trackColor={{ false: '#e5e7eb', true: '#fca5a5' }}
+              thumbColor={requiresCoupon ? '#ED1C24' : '#ffffff'}
+              ios_backgroundColor="#e5e7eb"
             />
           </View>
           {requiresCoupon && (
-            <View className="mt-3 border-t border-gray-200 pt-3">
-              <Text className="text-gray-700 font-bold mb-2 ml-1">Custom Code (Optional)</Text>
+            <View className="mt-4 border-t border-gray-100 pt-4">
+              <Text className="text-gray-900 font-bold mb-2 ml-1 text-sm">Custom Code (Optional)</Text>
               <TextInput 
                 value={couponCode} onChangeText={setCouponCode}
-                placeholder="e.g. SUMMER50 (Auto-generates)"
+                placeholder="e.g. SUMMER50"
+                placeholderTextColor="#9ca3af"
                 autoCapitalize="characters"
-                className="bg-white p-3 rounded-xl border border-gray-200 font-bold"
+                className="bg-gray-50 p-4 rounded-2xl border border-gray-100 font-bold text-brand tracking-widest text-base"
               />
             </View>
           )}
@@ -230,7 +243,7 @@ export default function MerchantAddOffer() {
 
         <Button 
           title="Publish Offer" 
-          className="bg-red-600 py-4 shadow-sm"
+          className="bg-brand py-4 shadow-lg shadow-brand/40 rounded-2xl"
           onPress={handleCreateOffer}
         />
       </ScrollView>

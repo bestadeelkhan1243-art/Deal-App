@@ -1,191 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Platform, TouchableOpacity, ScrollView } from 'react-native';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useMerchantStore } from '../../store/useMerchantStore';
 
-export default function MerchantOnboarding() {
-  const { profile, updateProfile } = useMerchantStore();
+export default function MerchantProfile() {
+  const { logout } = useAuthStore();
+  const router = useRouter();
 
-  const [firstName, setFirstName] = useState(profile.firstName);
-  const [lastName, setLastName] = useState(profile.lastName);
-  const [birth, setBirth] = useState(profile.birth);
-  const [privatePhone, setPrivatePhone] = useState(profile.privatePhone);
-
-  const [businessName, setBusinessName] = useState(profile.businessName);
-  const [businessType, setBusinessType] = useState(profile.businessType);
-  const [country, setCountry] = useState(profile.country);
-  const [businessPhone, setBusinessPhone] = useState(profile.businessPhone);
-  const [businessAddress, setBusinessAddress] = useState(profile.businessAddress);
-  const [businessEmail, setBusinessEmail] = useState(profile.businessEmail);
-
-  // Sync state if profile loads from async storage slightly later
-  useEffect(() => {
-    setFirstName(profile.firstName);
-    setLastName(profile.lastName);
-    setBirth(profile.birth);
-    setPrivatePhone(profile.privatePhone);
-    setBusinessName(profile.businessName);
-    setBusinessType(profile.businessType);
-    setCountry(profile.country);
-    setBusinessPhone(profile.businessPhone);
-    setBusinessAddress(profile.businessAddress);
-    setBusinessEmail(profile.businessEmail);
-  }, [profile]);
-
-  const handleSaveProfile = () => {
-    updateProfile({
-      firstName,
-      lastName,
-      birth,
-      privatePhone,
-      businessName,
-      businessType,
-      country,
-      businessPhone,
-      businessAddress,
-      businessEmail
-    });
-    Alert.alert("Success!", "Your merchant profile has been successfully saved.");
+  const handleLogout = () => {
+    logout();
+    if (Platform.OS === 'web') {
+      window.location.href = '/';
+    } else {
+      if (router.canDismiss()) {
+        router.dismissAll();
+      }
+      router.replace('/');
+    }
   };
 
   return (
-    <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-      
-      {/* Logo Header */}
-      <View className="items-center mt-12 mb-8">
-        <View className="relative items-center justify-center">
-          {/* Logo Mockup */}
-          <Text className="text-5xl font-bold text-[#5c4d4d] tracking-tighter">
-            L<Text className="text-red-600 tracking-tighter">oo</Text>k
-          </Text>
-          <Text className="text-4xl font-bold text-[#5c4d4d] tracking-widest -mt-2">Deal</Text>
-          <View className="w-20 h-1.5 bg-orange-400 rounded-full mt-2" />
-        </View>
-      </View>
-
-      <View className="px-6">
-        <Text className="text-lg font-bold text-gray-900 mb-6">We need more Information</Text>
-
-        {/* Personal Information */}
-        <View className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-          <Text className="text-xs font-bold text-gray-500 mb-4">Personal information</Text>
-          
-          <View className="flex-row space-x-4 mb-4">
-            <View className="flex-1">
-              <TextInput 
-                value={firstName} onChangeText={setFirstName}
-                placeholder="First name *" placeholderTextColor="#9ca3af"
-                className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-              />
+    <View className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        
+        {/* Premium Profile Header */}
+        <View className="bg-white pt-16 pb-8 px-6 rounded-b-[40px] shadow-sm mb-6 items-center border-b border-gray-100">
+          <View className="relative mb-5">
+            <View className="w-28 h-28 bg-red-50 rounded-full items-center justify-center border-4 border-white shadow-md shadow-brand/20">
+              <Text className="text-5xl">🏪</Text>
             </View>
-            <View className="flex-1">
-              <TextInput 
-                value={lastName} onChangeText={setLastName}
-                placeholder="Last name *" placeholderTextColor="#9ca3af"
-                className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-              />
-            </View>
+            <View className="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-4 border-white" />
           </View>
-
-          <View className="flex-row space-x-4">
-            <View className="flex-1">
-              <TextInput 
-                value={birth} onChangeText={setBirth}
-                placeholder="Birth *" placeholderTextColor="#9ca3af"
-                className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-              />
-            </View>
-            <View className="flex-1">
-              <TextInput 
-                value={privatePhone} onChangeText={setPrivatePhone}
-                placeholder="Private Phone" placeholderTextColor="#9ca3af"
-                className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-              />
-            </View>
+          
+          <Text className="text-3xl font-extrabold text-gray-900 mb-1 tracking-tight">Pizza Hut (Local)</Text>
+          <View className="flex-row items-center bg-gray-50 px-3 py-1.5 rounded-full mt-2 border border-gray-100">
+            <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+            <Text className="text-gray-600 font-bold text-xs ml-1.5">Verified Merchant</Text>
           </View>
         </View>
 
-        {/* Business Information */}
-        <View className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-8">
-          <Text className="text-xs font-bold text-gray-500 mb-4">Business information</Text>
+        {/* Dashboard Stats */}
+        <View className="px-6 mb-8 flex-row justify-between">
+          <View className="flex-1 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mr-2 items-center">
+            <Ionicons name="pricetags" size={28} color="#ED1C24" className="mb-2" />
+            <Text className="text-3xl font-black text-gray-900 mb-1">12</Text>
+            <Text className="text-xs text-gray-500 font-bold uppercase tracking-wider">Active Deals</Text>
+          </View>
+          <View className="flex-1 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 ml-2 items-center">
+            <Ionicons name="eye" size={28} color="#ED1C24" className="mb-2" />
+            <Text className="text-3xl font-black text-gray-900 mb-1">8.4k</Text>
+            <Text className="text-xs text-gray-500 font-bold uppercase tracking-wider">Total Views</Text>
+          </View>
+        </View>
+
+        {/* Action Menu */}
+        <View className="px-6 pb-10">
+          <Text className="text-lg font-bold text-gray-900 mb-4 ml-2">Account Settings</Text>
           
-          <View className="flex-row space-x-4 mb-4">
-            <View className="flex-1">
-              <TextInput 
-                value={businessName} onChangeText={setBusinessName}
-                placeholder="Business name *" placeholderTextColor="#9ca3af"
-                className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-              />
-            </View>
-            <View className="flex-1 bg-gray-50 rounded-full flex-row justify-between items-center px-4 py-3">
-              <TextInput 
-                value={businessType} onChangeText={setBusinessType}
-                placeholder="Type of business *" placeholderTextColor="#9ca3af"
-                className="flex-1 text-[11px] font-medium"
-              />
-              <Ionicons name="caret-down" size={12} color="#000" />
-            </View>
-          </View>
+          <View className="bg-white rounded-[32px] p-2 shadow-sm border border-gray-100 mb-6">
+            <TouchableOpacity 
+              onPress={() => router.push('/(merchant)/edit-profile')} 
+              className="flex-row items-center p-4 border-b border-gray-50"
+            >
+              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center mr-4">
+                <Ionicons name="person" size={20} color="#4b5563" />
+              </View>
+              <Text className="flex-1 text-base font-bold text-gray-900">Edit Profile</Text>
+              <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+            </TouchableOpacity>
 
-          <View className="flex-row space-x-4 mb-4">
-            <View className="flex-1 bg-gray-50 rounded-full flex-row justify-between items-center px-4 py-3">
-              <TextInput 
-                value={country} onChangeText={setCountry}
-                placeholder="Country *" placeholderTextColor="#9ca3af"
-                className="flex-1 text-[11px] font-medium"
-              />
-              <Ionicons name="caret-down" size={12} color="#000" />
-            </View>
-            <View className="flex-1">
-              <TextInput 
-                value={businessPhone} onChangeText={setBusinessPhone}
-                placeholder="Business Phone *" placeholderTextColor="#9ca3af"
-                className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-              />
-            </View>
-          </View>
+            <TouchableOpacity 
+              className="flex-row items-center p-4 border-b border-gray-50"
+            >
+              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center mr-4">
+                <Ionicons name="notifications" size={20} color="#4b5563" />
+              </View>
+              <Text className="flex-1 text-base font-bold text-gray-900">Notifications</Text>
+              <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+            </TouchableOpacity>
 
-          <View className="bg-gray-50 rounded-full flex-row items-center mb-4 pl-4 pr-1 py-1">
-            <TextInput 
-              value={businessAddress} onChangeText={setBusinessAddress}
-              placeholder="Business Address *" placeholderTextColor="#9ca3af"
-              className="flex-1 text-[11px] font-medium py-2"
-            />
-            <TouchableOpacity className="bg-[#e62020] px-4 py-2 rounded-full flex-row items-center shadow-sm">
-              <Ionicons name="location-outline" size={12} color="white" className="mr-1" />
-              <Text className="text-white text-[10px] font-bold ml-1">Select location</Text>
+            <TouchableOpacity 
+              onPress={handleLogout} 
+              className="flex-row items-center p-4"
+            >
+              <View className="w-10 h-10 bg-red-50 rounded-full items-center justify-center mr-4">
+                <Ionicons name="log-out" size={20} color="#ED1C24" />
+              </View>
+              <Text className="flex-1 text-base font-bold text-brand">Logout</Text>
             </TouchableOpacity>
           </View>
-
-          <TextInput 
-            value={businessEmail} onChangeText={setBusinessEmail}
-            placeholder="Business Email *" placeholderTextColor="#9ca3af"
-            className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
-          />
         </View>
 
-        {/* Save Button */}
-        <TouchableOpacity 
-          className="bg-red-600 py-4 rounded-2xl items-center shadow-md mb-12"
-          onPress={handleSaveProfile}
-        >
-          <Text className="text-white font-bold text-sm tracking-wide">SAVE PROFILE</Text>
-        </TouchableOpacity>
-
-        {/* Footer Links */}
-        <View className="flex-row justify-center space-x-8 mb-4">
-          <TouchableOpacity>
-            <Text className="text-gray-500 text-xs font-medium">About us</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text className="text-gray-500 text-xs font-medium">Pricing</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text className="text-gray-500 text-xs font-medium">Help and contact</Text>
-          </TouchableOpacity>
-        </View>
-
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

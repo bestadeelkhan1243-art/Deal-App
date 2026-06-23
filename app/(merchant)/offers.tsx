@@ -63,67 +63,68 @@ export default function MerchantOffers() {
           </View>
         ) : (
           offers.map((offer, i) => (
-            <View key={offer.id} className="bg-white mb-3 shadow-sm">
+            <View key={offer.id} className="bg-white mx-4 mb-6 rounded-3xl shadow-md border border-gray-100 overflow-hidden">
               
-              {/* Deal Image */}
-              <View className="w-full h-44 bg-gray-200">
+              {/* Deal Image with Overlay View Count */}
+              <View className="w-full h-48 bg-gray-200 relative">
                 <Image 
                   source={offer.imageUrl ? { uri: offer.imageUrl } : (i % 2 === 0 ? require('../../assets/images/pizza_deal.png') : require('../../assets/images/coffee_deal.png'))}
                   style={{ width: '100%', height: '100%' }}
                   resizeMode="cover"
                 />
+                <View className="absolute top-4 right-4 bg-black/60 rounded-full px-3 py-1.5 flex-row items-center backdrop-blur-sm">
+                  <Ionicons name="eye" size={14} color="white" />
+                  <Text className="text-white text-xs font-bold ml-1.5">{Math.floor(Math.random() * 500) + 50}</Text>
+                </View>
               </View>
 
               {/* Deal Content */}
-              <View className="p-4">
-                {/* Title & Views */}
-                <View className="flex-row justify-between items-start mb-4">
+              <View className="p-5">
+                {/* Title & Edit Button */}
+                <View className="flex-row justify-between items-start mb-2">
                   <View className="flex-1 pr-4">
-                    <Text className="text-base font-bold text-gray-900 mb-0.5">{offer.title}</Text>
-                    <Text className="text-[10px] text-gray-800">{offer.description || 'for each artikel'}</Text>
+                    <Text className="text-xl font-bold text-gray-900 leading-tight mb-1">{offer.title}</Text>
+                    <Text className="text-sm text-gray-500">{offer.description || 'Valid for all items in store'}</Text>
                   </View>
-                  <View className="items-center justify-center pt-1">
-                    <Ionicons name="eye" size={16} color="#e62020" />
-                    <Text className="text-[7px] text-gray-800 mt-0.5 font-medium">{Math.floor(Math.random() * 500) + 50} views</Text>
+                  <TouchableOpacity onPress={() => openEditModal(offer)} className="bg-gray-50 border border-gray-200 p-2.5 rounded-full shadow-sm">
+                    <Ionicons name="pencil" size={18} color="#e62020" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Divider */}
+                <View className="h-px bg-gray-100 my-4" />
+
+                {/* Details List */}
+                <View className="flex-row items-center mb-3">
+                  <View className="w-9 h-9 rounded-full bg-red-50 items-center justify-center mr-3">
+                    <Ionicons name="calendar" size={16} color="#e62020" />
+                  </View>
+                  <View>
+                    <Text className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Valid Dates</Text>
+                    <Text className="text-sm text-gray-800 font-semibold mt-0.5">15.06 to 25.06.2026</Text>
                   </View>
                 </View>
 
-                {/* Details List & Right Column */}
-                <View className="flex-row justify-between items-end">
-                  
-                  {/* Left Column: Icon Details */}
-                  <View className="flex-1 pr-2">
-                    <View className="flex-row items-center mb-1.5">
-                      <Ionicons name="calendar-outline" size={12} color="#111827" />
-                      <Text className="text-[10px] text-gray-700 ml-1.5">Today at 15:00 pm</Text>
-                    </View>
-                    <View className="flex-row items-center mb-1.5">
-                      <Ionicons name="time-outline" size={12} color="#111827" />
-                      <Text className="text-[10px] text-gray-700 ml-1.5">From 15.06 to 25.06.2026</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="storefront-outline" size={12} color="#111827" />
-                      <Text className="text-[10px] text-gray-700 ml-1.5">
-                        {offer.branchType === 'Specific Location' && offer.specificBranchName 
-                          ? `only in the ${offer.specificBranchName} store` 
-                          : 'In all our Location'}
-                      </Text>
-                    </View>
+                <View className="flex-row items-center mb-5">
+                  <View className="w-9 h-9 rounded-full bg-red-50 items-center justify-center mr-3">
+                    <Ionicons name="location" size={16} color="#e62020" />
                   </View>
-
-                  {/* Right Column: Code Button & Edit Icon */}
-                  <View className="items-end justify-between h-full">
-                    <View className="bg-[#e62020] px-3 py-1 mb-3">
-                      <Text className="text-white text-[9px] font-medium tracking-wide">
-                        {offer.requiresCoupon ? 'Code: Look Deal' : 'Code: No code'}
-                      </Text>
-                    </View>
-                    
-                    <TouchableOpacity onPress={() => openEditModal(offer)}>
-                      <Ionicons name="create-outline" size={18} color="#e62020" style={{ opacity: 0.6 }} />
-                    </TouchableOpacity>
+                  <View>
+                    <Text className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Location</Text>
+                    <Text className="text-sm text-gray-800 font-semibold mt-0.5">
+                      {offer.branchType === 'Specific Location' && offer.specificBranchName 
+                        ? `Only in ${offer.specificBranchName} store` 
+                        : 'All Locations'}
+                    </Text>
                   </View>
+                </View>
 
+                {/* Code Badge */}
+                <View className={`self-start px-4 py-2.5 rounded-xl flex-row items-center ${offer.requiresCoupon ? 'bg-red-50 border border-red-100' : 'bg-gray-50 border border-gray-200'}`}>
+                  <Ionicons name="ticket" size={16} color={offer.requiresCoupon ? '#e62020' : '#6B7280'} />
+                  <Text className={`font-bold ml-2 text-sm ${offer.requiresCoupon ? 'text-red-600' : 'text-gray-600'}`}>
+                    {offer.requiresCoupon ? 'Code: Look Deal' : 'No Code Needed'}
+                  </Text>
                 </View>
 
               </View>
