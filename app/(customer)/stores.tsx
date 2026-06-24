@@ -3,9 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function StoresScreen() {
   const stores = [
-    { id: 1, name: "Luigi's Pizzeria", category: "Restaurant", rating: 4.8, distance: "1.2 km", image: require('../../assets/images/pizza_deal.png') },
-    { id: 2, name: "Brew & Co. Coffee", category: "Cafe", rating: 4.5, distance: "2.5 km", image: require('../../assets/images/coffee_deal.png') },
-    { id: 3, name: "Fresh Supermarket", category: "Grocery", rating: 4.2, distance: "3.1 km", image: require('../../assets/images/pizza_deal.png') },
+    { id: 1, name: "Luigi's Pizzeria", category: "Restaurant", rating: 4.8, distance: "1.2 km" },
+    { id: 2, name: "Brew & Co. Coffee", category: "Cafe", rating: 4.5, distance: "2.5 km" },
+    { id: 3, name: "Fresh Supermarket", category: "Grocery", rating: 4.2, distance: "3.1 km" },
   ];
 
   return (
@@ -29,8 +29,8 @@ export default function StoresScreen() {
         
         {stores.map((store) => (
           <TouchableOpacity key={store.id} activeOpacity={0.9} className="bg-white rounded-3xl mb-5 shadow-sm border border-gray-100 overflow-hidden flex-row">
-            <View className="w-1/3 h-36 bg-gray-200">
-              <Image source={store.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <View className="w-1/3 h-36 bg-gray-200 items-center justify-center">
+              <Ionicons name="storefront-outline" size={32} color="#9ca3af" />
             </View>
             <View className="flex-1 p-4 justify-between">
               <View>

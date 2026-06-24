@@ -32,11 +32,17 @@ export const DealCard: React.FC<DealCardProps> = ({
       className={`bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-5 ${containerClassName || ''}`}
     >
       <View className="relative w-full h-48">
-        <Image 
-          source={imageUrl ? { uri: imageUrl } : (imageSource || require('../../assets/images/pizza_deal.png'))} 
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
+        {imageUrl || imageSource ? (
+          <Image 
+            source={imageUrl ? { uri: imageUrl } : imageSource!} 
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        ) : (
+          <View className="w-full h-full items-center justify-center bg-gray-200">
+            <Ionicons name="image-outline" size={32} color="#9ca3af" />
+          </View>
+        )}
         {badge && (
           <View className="absolute top-4 left-4 bg-brand px-3 py-1.5 rounded-full shadow-sm">
             <Text className="text-white font-bold text-xs">{badge}</Text>

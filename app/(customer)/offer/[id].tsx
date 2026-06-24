@@ -93,12 +93,16 @@ export default function OfferDetails() {
                 />
               ))}
             </ScrollView>
-          ) : (
+          ) : offer.imageUrl ? (
             <Image 
-              source={offer.imageUrl ? { uri: offer.imageUrl } : require('../../../assets/images/pizza_deal.png')}
+              source={{ uri: offer.imageUrl }}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
+          ) : (
+            <View className="w-full h-full items-center justify-center bg-gray-200">
+              <Ionicons name="image-outline" size={64} color="#9ca3af" />
+            </View>
           )}
           
           <TouchableOpacity 

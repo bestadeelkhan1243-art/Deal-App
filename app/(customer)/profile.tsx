@@ -94,12 +94,16 @@ export default function CustomerProfile() {
                 onPress={() => router.push(`/(customer)/offer/${claim.offer.id}`)}
                 className="bg-white rounded-2xl p-4 mb-4 flex-row items-center border border-gray-100 shadow-sm"
               >
-                <View className="w-16 h-16 rounded-xl bg-gray-100 mr-4 overflow-hidden">
-                  <Image 
-                    source={claim.offer.imageUrl ? { uri: claim.offer.imageUrl } : require('../../assets/images/pizza_deal.png')}
-                    style={{ width: '100%', height: '100%' }}
-                    resizeMode="cover"
-                  />
+                <View className="w-20 h-20 bg-gray-100 rounded-2xl mr-4 overflow-hidden border border-gray-100 items-center justify-center">
+                  {claim.offer.imageUrl ? (
+                    <Image 
+                      source={{ uri: claim.offer.imageUrl }} 
+                      style={{width: '100%', height: '100%'}} 
+                      resizeMode="cover" 
+                    />
+                  ) : (
+                    <Ionicons name="image-outline" size={24} color="#9ca3af" />
+                  )}
                 </View>
                 <View className="flex-1">
                   <Text className="text-gray-900 font-bold text-base" numberOfLines={1}>{claim.offer.title}</Text>

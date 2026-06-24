@@ -96,11 +96,17 @@ export default function MerchantOffers() {
               
               {/* Deal Image with Overlay View Count */}
               <View className="w-full h-48 bg-gray-200 relative">
-                <Image 
-                  source={offer.imageUrl ? { uri: offer.imageUrl } : (i % 2 === 0 ? require('../../assets/images/pizza_deal.png') : require('../../assets/images/coffee_deal.png'))}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
+                {offer.imageUrl ? (
+                  <Image 
+                    source={{ uri: offer.imageUrl }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View className="w-full h-full items-center justify-center bg-gray-200">
+                    <Ionicons name="image-outline" size={32} color="#9ca3af" />
+                  </View>
+                )}
                 <View className="absolute top-4 right-4 bg-black/60 rounded-full px-3 py-1.5 flex-row items-center backdrop-blur-sm">
                   <Ionicons name="eye" size={14} color="white" />
                   <Text className="text-white text-xs font-bold ml-1.5">{Math.floor(Math.random() * 500) + 50}</Text>
@@ -167,12 +173,16 @@ export default function MerchantOffers() {
         <View className="flex-1 bg-[#f4f4f4] mt-12 rounded-t-3xl overflow-hidden shadow-2xl border border-gray-200">
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
             {/* Hero Image */}
-            <View className="w-full h-56 relative bg-black">
-              <Image 
-                source={editingOffer?.imageUrl ? { uri: editingOffer.imageUrl } : require('../../assets/images/pizza_deal.png')}
-                style={{ width: '100%', height: '100%', opacity: 0.9 }}
-                resizeMode="cover"
-              />
+            <View className="w-full h-56 relative bg-black items-center justify-center">
+              {editingOffer?.imageUrl ? (
+                <Image 
+                  source={{ uri: editingOffer.imageUrl }}
+                  style={{ width: '100%', height: '100%', opacity: 0.9 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="image-outline" size={48} color="#4b5563" />
+              )}
               <TouchableOpacity 
                 className="absolute top-4 right-4 z-10 p-2"
                 onPress={() => setEditingOffer(null)}

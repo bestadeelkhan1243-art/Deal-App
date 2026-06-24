@@ -94,11 +94,17 @@ export default function CustomerHome() {
             
             {/* Image Area */}
             <View className="relative h-64 w-full bg-gray-200">
-              <Image 
-                source={offer.imageUrl ? { uri: offer.imageUrl } : (i % 2 === 0 ? require('../../assets/images/pizza_deal.png') : require('../../assets/images/coffee_deal.png'))}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
-              />
+              {offer.imageUrl ? (
+                <Image 
+                  source={{ uri: offer.imageUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="w-full h-full items-center justify-center bg-gray-200">
+                  <Ionicons name="image-outline" size={48} color="#9ca3af" />
+                </View>
+              )}
               {/* Premium Top Left Badge */}
               {isExpired ? (
                 <View className="absolute top-4 left-4 bg-gray-800/90 backdrop-blur-md rounded-2xl px-4 py-1.5 shadow-sm">
