@@ -33,7 +33,7 @@ interface OfferState {
   updateOffer: (id: string, updates: Partial<Offer>) => Promise<void>;
   toggleOfferStatus: (id: string) => Promise<void>;
   deleteOffer: (id: string) => Promise<void>;
-  subscribeToOffers: () => (() => void) | undefined;
+  initOffersListener: () => (() => void) | undefined;
 }
 
 const initialMockOffers: Offer[] = [
@@ -64,11 +64,15 @@ const initialMockOffers: Offer[] = [
   },
 ];
 
-export const useOfferStore = create<OfferState>()(
-  persist(
-    (set, get) => {
-      let unsubscribe: (() => void) | undefined;
-      
+export const useOfferStore = create<OfferState>((set, get) => {
+  let unsubscribe: (() => void) | undefined;
+
+  return {
+    offers: [], // Start empty, fetch real data from DB
+
+    initOffersListener: () => {
+      if (unsubscribe) return unsubscribe; // Already listening
+
       if (isFirebaseInitialized && db) {
         try {
           const q = query(collection(db, 'offers'));
@@ -90,15 +94,16 @@ export const useOfferStore = create<OfferState>()(
                 couponCode: data.couponCode || ''
               });
             });
-            set({ offers: dbOffers.length > 0 ? dbOffers : initialMockOffers });
+            set({ offers: dbOffers });
+          }, (error) => {
+            console.error("Firestore Offers listener error:", error);
           });
         } catch (e) {
-          console.warn("Failed to attach Firestore listeners:", e);
+          console.warn("Failed to attach Firestore Offers listener:", e);
         }
       }
-
-      return {
-        offers: initialMockOffers,
+      return unsubscribe;
+    },
 
         addOffer: async (offer) => {
           if (isFirebaseInitialized && db && auth.currentUser) {
@@ -176,28 +181,21 @@ export const useOfferStore = create<OfferState>()(
           }
         },
 
-        deleteOffer: async (id) => {
-          if (isFirebaseInitialized && db) {
-            try {
-              await deleteDoc(doc(db, 'offers', id));
-            } catch (error) {
-              console.error("Error deleting offer from Firestore:", error);
-            }
-          } else {
-            // Fallback for Demo Mode
-            set((state) => ({
-              offers: state.offers.filter(o => o.id !== id)
-            }));
-          }
-        },
-
-        subscribeToOffers: () => unsubscribe
-      };
+    deleteOffer: async (id) => {
+      if (isFirebaseInitialized && db) {
+        try {
+          await deleteDoc(doc(db, 'offers', id));
+        } catch (error) {
+          console.error("Error deleting offer from Firestore:", error);
+        }
+      } else {
+        // Fallback for Demo Mode
+        set((state) => ({
+          offers: state.offers.filter(o => o.id !== id)
+        }));
+      }
     },
-    {
-      name: 'offer-storage',
-      storage: createJSONStorage(() => safeStorage),
-      partialize: (state) => ({ offers: state.offers }), // Persist only offers
-    }
-  )
-);
+
+    initOffersListener: () => get().initOffersListener() // This is defined above
+  };
+});
