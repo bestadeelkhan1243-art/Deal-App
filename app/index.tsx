@@ -57,10 +57,10 @@ export default function Index() {
       if (isRegistering) {
         showPopup('success', 'Welcome!', 'Your account has been successfully created.');
       }
-      const roleToNavigate = isRegistering ? selectedRole : (email.includes('merchant') ? 'merchant' : 'customer');
+      const roleToNavigate = result.role || (isRegistering ? selectedRole : 'customer');
       // Wait for popup animation to start before routing
       setTimeout(() => {
-        router.replace(roleToNavigate === 'customer' ? '/(customer)' : '/(merchant)');
+        router.replace(roleToNavigate === 'merchant' ? '/(merchant)' : '/(customer)');
       }, 500);
     } else {
       showPopup('error', 'Authentication Failed', result.error || "An unknown error occurred.");

@@ -18,7 +18,7 @@ interface AuthState {
   user: FirebaseUser | null;
   isLoading: boolean;
   loginAs: (role: UserRole) => void;
-  loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: UserRole }>;
   signUpWithEmail: (email: string, password: string, role: UserRole, extraData?: { profilePic?: string, businessName?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setLoading: (isLoading: boolean) => void;
@@ -64,12 +64,23 @@ export const useAuthStore = create<AuthState>((set) => {
         // Fallback for Demo Mode
         const role: UserRole = email.toLowerCase().includes('merchant') ? 'merchant' : 'customer';
         set({ isLoggedIn: true, role, user: null });
-        return { success: true };
+        return { success: true, role };
       }
       set({ isLoading: true });
       try {
-        await signInWithEmailAndPassword(auth, email, password);
-        return { success: true };
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        let resolvedRole: UserRole = 'customer';
+        if (db) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+            if (userDoc.exists()) {
+              resolvedRole = userDoc.data().role as UserRole;
+            }
+          } catch (e) {
+            console.warn("Failed to fetch role during login:", e);
+          }
+        }
+        return { success: true, role: resolvedRole };
       } catch (error: any) {
         set({ isLoading: false });
         return { success: false, error: error.message || "Failed to sign in." };
@@ -80,7 +91,7 @@ export const useAuthStore = create<AuthState>((set) => {
       if (!isFirebaseInitialized || !db) {
         // Fallback for Demo Mode
         set({ isLoggedIn: true, role, user: null });
-        return { success: true };
+        return { success: true, role };
       }
       set({ isLoading: true });
       try {
@@ -99,7 +110,7 @@ export const useAuthStore = create<AuthState>((set) => {
 
         await setDoc(doc(db, 'users', user.uid), userData);
         
-        return { success: true };
+        return { success: true, role };
       } catch (error: any) {
         set({ isLoading: false });
         return { success: false, error: error.message || "Failed to register." };
