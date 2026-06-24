@@ -20,12 +20,20 @@ export default function OfferDetails() {
   const [hasClaimed, setHasClaimed] = useState(false);
   const [loadingClaimStatus, setLoadingClaimStatus] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   const screenWidth = Dimensions.get('window').width;
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / screenWidth);
+    if (activeSlide !== index) {
+      setActiveSlide(index);
+    }
+  };
+
+  const goToSlide = (index: number) => {
+    scrollViewRef.current?.scrollTo({ x: index * screenWidth, animated: true });
     setActiveSlide(index);
   };
 
@@ -93,6 +101,7 @@ export default function OfferDetails() {
           {offer.imageUrls && offer.imageUrls.length > 0 ? (
             <>
               <ScrollView 
+                ref={scrollViewRef}
                 horizontal 
                 pagingEnabled 
                 showsHorizontalScrollIndicator={false} 
@@ -111,15 +120,40 @@ export default function OfferDetails() {
                   />
                 ))}
               </ScrollView>
+
+              {/* Web Navigation Arrows */}
+              {offer.imageUrls.length > 1 && (
+                <>
+                  {activeSlide > 0 && (
+                    <TouchableOpacity 
+                      onPress={() => goToSlide(activeSlide - 1)}
+                      className="absolute left-4 top-1/2 -mt-4 w-10 h-10 bg-black/40 rounded-full items-center justify-center backdrop-blur-sm"
+                    >
+                      <Ionicons name="chevron-back" size={24} color="white" />
+                    </TouchableOpacity>
+                  )}
+                  {activeSlide < offer.imageUrls.length - 1 && (
+                    <TouchableOpacity 
+                      onPress={() => goToSlide(activeSlide + 1)}
+                      className="absolute right-4 top-1/2 -mt-4 w-10 h-10 bg-black/40 rounded-full items-center justify-center backdrop-blur-sm"
+                    >
+                      <Ionicons name="chevron-forward" size={24} color="white" />
+                    </TouchableOpacity>
+                  )}
+                </>
+              )}
               
               {/* Pagination Dots */}
               {offer.imageUrls.length > 1 && (
                 <View className="absolute bottom-12 w-full flex-row justify-center space-x-2">
                   {offer.imageUrls.map((_, idx) => (
-                    <View 
+                    <TouchableOpacity 
                       key={idx} 
-                      className={`h-2 rounded-full ${activeSlide === idx ? 'w-4 bg-white' : 'w-2 bg-white/50'}`} 
-                    />
+                      onPress={() => goToSlide(idx)}
+                      className="p-1"
+                    >
+                      <View className={`h-2 rounded-full ${activeSlide === idx ? 'w-4 bg-white' : 'w-2 bg-white/50'}`} />
+                    </TouchableOpacity>
                   ))}
                 </View>
               )}
