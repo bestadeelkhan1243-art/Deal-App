@@ -196,8 +196,6 @@ export const useOfferStore = create<OfferState>((set, get) => {
           offers: state.offers.filter(o => o.id !== id)
         }));
       }
-    },
-
-    initOffersListener: () => get().initOffersListener() // This is defined above
+    }
   };
 });
