@@ -33,6 +33,7 @@ export interface Offer {
 
 interface OfferState {
   offers: Offer[];
+  isLoading: boolean;
   addOffer: (offer: Omit<Offer, 'id' | 'store' | 'distance'>) => Promise<void>;
   updateOffer: (id: string, updates: Partial<Offer>) => Promise<void>;
   toggleOfferStatus: (id: string) => Promise<void>;
@@ -78,6 +79,7 @@ export const useOfferStore = create<OfferState>((set, get) => {
 
   return {
     offers: [], // Start empty, fetch real data from DB
+    isLoading: true,
 
     initOffersListener: () => {
       if (unsubscribe) return unsubscribe; // Already listening
@@ -108,13 +110,16 @@ export const useOfferStore = create<OfferState>((set, get) => {
                 imageUrls: data.imageUrls || []
               });
             });
-            set({ offers: dbOffers });
+            set({ offers: dbOffers, isLoading: false });
           }, (error) => {
             console.error("Firestore Offers listener error:", error);
           });
         } catch (e) {
           console.warn("Failed to attach Firestore Offers listener:", e);
+          set({ isLoading: false });
         }
+      } else {
+        set({ isLoading: false });
       }
       return unsubscribe;
     },

@@ -4,9 +4,10 @@ import { useOfferStore, Offer } from '../../store/useOfferStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/useAuthStore';
 import * as ImagePicker from 'expo-image-picker';
+import { ActivityIndicator } from 'react-native';
 
 export default function MerchantOffers() {
-  const { offers, deleteOffer, updateOffer } = useOfferStore();
+  const { offers, deleteOffer, updateOffer, isLoading } = useOfferStore();
   const { user } = useAuthStore();
   const myOffers = offers.filter(o => o.merchantId === user?.uid);
   
@@ -87,8 +88,14 @@ export default function MerchantOffers() {
       <ScrollView className="flex-1 mt-2" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {myOffers.length === 0 ? (
           <View className="items-center justify-center py-20 mt-10">
-            <Ionicons name="pricetag-outline" size={64} color="#d1d5db" />
-            <Text className="text-gray-400 mt-4 text-lg">No active offers</Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#ED1C24" />
+            ) : (
+              <>
+                <Ionicons name="pricetag-outline" size={64} color="#d1d5db" />
+                <Text className="text-gray-400 mt-4 text-lg">No active offers</Text>
+              </>
+            )}
           </View>
         ) : (
           myOffers.map((offer, i) => (

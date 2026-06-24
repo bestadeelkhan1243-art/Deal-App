@@ -12,7 +12,7 @@ import { Button } from '../../../components/ui/Button';
 export default function OfferDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { offers, claimOffer } = useOfferStore();
+  const { offers, claimOffer, isLoading } = useOfferStore();
   const { user } = useAuthStore();
   const { showPopup } = usePopup();
 
@@ -65,6 +65,14 @@ export default function OfferDetails() {
   }, [user, offer?.id]);
 
   if (!offer) {
+    if (isLoading) {
+      return (
+        <View className="flex-1 bg-white items-center justify-center">
+          <ActivityIndicator size="large" color="#ED1C24" />
+          <Text className="text-gray-500 mt-4 text-base font-medium">Loading Deal...</Text>
+        </View>
+      );
+    }
     return (
       <View className="flex-1 bg-white items-center justify-center">
         <Ionicons name="alert-circle-outline" size={64} color="#e5e7eb" />

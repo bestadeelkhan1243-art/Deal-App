@@ -6,7 +6,7 @@ import { useOfferStore } from '../../store/useOfferStore';
 
 export default function CustomerHome() {
   const router = useRouter();
-  const { offers } = useOfferStore();
+  const { offers, isLoading } = useOfferStore();
   
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -141,8 +141,14 @@ export default function CustomerHome() {
         )})}
         {visibleOffers.length === 0 && (
           <View className="items-center justify-center mt-12">
-            <Ionicons name="search-outline" size={64} color="#e5e7eb" />
-            <Text className="text-center text-gray-500 mt-4 text-lg font-medium">No active deals found.</Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#ED1C24" />
+            ) : (
+              <>
+                <Ionicons name="search-outline" size={64} color="#e5e7eb" />
+                <Text className="text-center text-gray-500 mt-4 text-lg font-medium">No active deals found.</Text>
+              </>
+            )}
           </View>
         )}
       </ScrollView>
