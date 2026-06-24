@@ -25,7 +25,7 @@ export default function MerchantAddOffer() {
   const [branchType, setBranchType] = useState<'All Branches' | 'Specific Location'>('All Branches');
   const [specificBranchName, setSpecificBranchName] = useState('');
 
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const today = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(today);
@@ -33,18 +33,24 @@ export default function MerchantAddOffer() {
   const [requiresCoupon, setRequiresCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState('');
 
-  const pickImage = async () => {
+  const pickImages = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsMultipleSelection: true,
       quality: 0.5,
       base64: true, 
     });
 
-    if (!result.canceled && result.assets[0].base64) {
-      setImageUrl(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    if (!result.canceled && result.assets) {
+      const newImages = result.assets
+        .filter(asset => asset.base64)
+        .map(asset => `data:image/jpeg;base64,${asset.base64}`);
+      setImageUrls(prev => [...prev, ...newImages]);
     }
+  };
+
+  const removeImage = (index: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleCreateOffer = () => {
@@ -66,7 +72,8 @@ export default function MerchantAddOffer() {
         limitCount: finalLimitCount,
         branchType,
         specificBranchName: branchType === 'Specific Location' ? specificBranchName.trim() : undefined,
-        imageUrl,
+        imageUrl: imageUrls.length > 0 ? imageUrls[0] : '',
+        imageUrls,
         status: 'Active',
         startDate: startDate.trim(),
         endDate: endDate.trim(),
@@ -76,7 +83,7 @@ export default function MerchantAddOffer() {
       
       // Reset
       setNewTitle(''); setNewDesc(''); setDiscountValue(''); setStartDate(today); setEndDate(today);
-      setLimitCount(''); setImageUrl(''); setBranchType('All Branches'); setSpecificBranchName('');
+      setLimitCount(''); setImageUrls([]); setBranchType('All Branches'); setSpecificBranchName('');
       setRequiresCoupon(false); setCouponCode('');
       setDiscountType('Percentage'); setLimitType('Unlimited');
       
@@ -127,21 +134,30 @@ export default function MerchantAddOffer() {
           <Text className="text-gray-900 font-bold mb-2 ml-1 text-base">Product Image</Text>
           <Text className="text-gray-500 font-medium mb-3 ml-1 text-xs">Add an image to make your deal stand out</Text>
 
-          <TouchableOpacity 
-            onPress={pickImage}
-            className="bg-gray-50 p-1 border-2 border-dashed border-gray-200 rounded-3xl items-center justify-center h-40 overflow-hidden"
-          >
-            {imageUrl ? (
-              <Image source={{ uri: imageUrl }} className="w-full h-full rounded-[20px]" resizeMode="cover" />
-            ) : (
-              <View className="items-center">
-                <View className="w-12 h-12 bg-white rounded-full items-center justify-center shadow-sm mb-3">
-                  <Ionicons name="camera" size={24} color="#ED1C24" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
+            <View className="flex-row items-center space-x-3">
+              {imageUrls.map((url, index) => (
+                <View key={index} className="relative w-32 h-32 bg-black rounded-2xl overflow-hidden mr-3">
+                  <Image source={{ uri: url }} className="w-full h-full opacity-90" resizeMode="cover" />
+                  <TouchableOpacity 
+                    onPress={() => removeImage(index)}
+                    className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5"
+                  >
+                    <Ionicons name="close" size={16} color="white" />
+                  </TouchableOpacity>
                 </View>
-                <Text className="text-gray-600 font-bold">Tap to select photo</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+              ))}
+              <TouchableOpacity 
+                onPress={pickImages}
+                className="w-32 h-32 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl items-center justify-center"
+              >
+                <View className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm mb-2">
+                  <Ionicons name="camera" size={20} color="#ED1C24" />
+                </View>
+                <Text className="text-gray-500 font-bold text-xs">Add Photo</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
 
         <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-6">

@@ -81,11 +81,25 @@ export default function OfferDetails() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         {/* Full Image Header */}
         <View className="relative w-full h-80 bg-gray-200">
-          <Image 
-            source={offer.imageUrl ? { uri: offer.imageUrl } : require('../../../assets/images/pizza_deal.png')}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-          />
+          {offer.imageUrls && offer.imageUrls.length > 0 ? (
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} className="w-full h-full">
+              {offer.imageUrls.map((url, index) => (
+                <Image 
+                  key={index}
+                  source={{ uri: url }}
+                  style={{ width: 400, height: '100%' }}
+                  resizeMode="cover"
+                  className="w-screen"
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <Image 
+              source={offer.imageUrl ? { uri: offer.imageUrl } : require('../../../assets/images/pizza_deal.png')}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          )}
           
           <TouchableOpacity 
             onPress={() => router.back()}

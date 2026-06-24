@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Image, Modal, TextInput } fro
 import { useOfferStore, Offer } from '../../store/useOfferStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/useAuthStore';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function MerchantOffers() {
   const { offers, deleteOffer, updateOffer } = useOfferStore();
@@ -18,15 +19,37 @@ export default function MerchantOffers() {
   const [editStartDate, setEditStartDate] = useState('');
   const [editEndDate, setEditEndDate] = useState('');
   const [editLocation, setEditLocation] = useState('');
+  const [editImageUrls, setEditImageUrls] = useState<string[]>([]);
+
+  const pickImages = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets) {
+      const newImages = result.assets
+        .filter(asset => asset.base64)
+        .map(asset => `data:image/jpeg;base64,${asset.base64}`);
+      setEditImageUrls(prev => [...prev, ...newImages]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setEditImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
 
   const openEditModal = (offer: Offer) => {
     setEditingOffer(offer);
     setEditTitle(offer.title);
     setEditDescription(offer.description);
     setEditCode(offer.couponCode || '');
-    setEditStartDate('17.06.2026'); // Mocking date split for UI
-    setEditEndDate('27.06.2026');   // Mocking date split for UI
+    setEditStartDate(offer.startDate || ''); 
+    setEditEndDate(offer.endDate || '');   
     setEditLocation(offer.branchType === 'Specific Location' ? (offer.specificBranchName || '') : 'all our Location');
+    setEditImageUrls(offer.imageUrls || (offer.imageUrl ? [offer.imageUrl] : []));
   };
 
   const handleSaveEdit = () => {
@@ -36,9 +59,12 @@ export default function MerchantOffers() {
         description: editDescription,
         couponCode: editCode,
         requiresCoupon: editCode.length > 0,
-        expiry: `From ${editStartDate} to ${editEndDate}`,
+        startDate: editStartDate,
+        endDate: editEndDate,
         branchType: editLocation.toLowerCase().includes('all') ? 'All Branches' : 'Specific Location',
-        specificBranchName: editLocation
+        specificBranchName: editLocation,
+        imageUrls: editImageUrls,
+        imageUrl: editImageUrls.length > 0 ? editImageUrls[0] : ''
       });
       setEditingOffer(null);
     }
@@ -167,16 +193,27 @@ export default function MerchantOffers() {
             <View className="px-6">
               {/* Change photo */}
               <Text className="text-[12px] text-gray-700 mb-2">Change photo</Text>
-              <View className="bg-white p-3 rounded-2xl flex-row space-x-3 mb-5">
-                {[1, 2, 3].map((item) => (
-                  <View key={item} className="relative w-20 h-14 bg-black rounded-sm overflow-hidden">
-                    <Image source={require('../../assets/images/pizza_deal.png')} className="w-full h-full opacity-80" resizeMode="cover" />
-                    <View className="absolute top-1 right-1 bg-black/50 rounded-full p-0.5">
-                      <Ionicons name="close" size={10} color="white" />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
+                <View className="bg-white p-3 rounded-2xl flex-row space-x-3 items-center">
+                  {editImageUrls.map((url, index) => (
+                    <View key={index} className="relative w-20 h-14 bg-black rounded-sm overflow-hidden mr-3">
+                      <Image source={{ uri: url }} className="w-full h-full opacity-80" resizeMode="cover" />
+                      <TouchableOpacity 
+                        onPress={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-black/50 rounded-full p-0.5"
+                      >
+                        <Ionicons name="close" size={10} color="white" />
+                      </TouchableOpacity>
                     </View>
-                  </View>
-                ))}
-              </View>
+                  ))}
+                  <TouchableOpacity 
+                    onPress={pickImages}
+                    className="w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-sm items-center justify-center"
+                  >
+                    <Ionicons name="add" size={24} color="#9ca3af" />
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
 
               {/* Change title */}
               <Text className="text-[12px] text-gray-700 mb-1.5">Change title</Text>

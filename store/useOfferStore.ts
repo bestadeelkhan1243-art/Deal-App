@@ -19,6 +19,7 @@ export interface Offer {
   branchType?: 'All Branches' | 'Specific Location';
   specificBranchName?: string;
   imageUrl?: string;
+  imageUrls?: string[];
   status: 'Active' | 'Paused';
   startDate?: string;
   endDate?: string;
