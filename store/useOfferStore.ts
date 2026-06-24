@@ -25,6 +25,7 @@ export interface Offer {
   distance: string;
   requiresCoupon?: boolean;
   couponCode?: string;
+  merchantId?: string;
 }
 
 interface OfferState {
@@ -91,7 +92,8 @@ export const useOfferStore = create<OfferState>((set, get) => {
                 store: data.store || 'Local Store',
                 distance: data.distance || '0.1 km',
                 requiresCoupon: data.requiresCoupon || false,
-                couponCode: data.couponCode || ''
+                couponCode: data.couponCode || '',
+                merchantId: data.merchantId
               });
             });
             set({ offers: dbOffers });
