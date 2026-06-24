@@ -104,12 +104,22 @@ export const useOfferStore = create<OfferState>()(
           if (isFirebaseInitialized && db && auth.currentUser) {
             try {
               const merchantName = useMerchantStore.getState().profile.businessName || "Unnamed Store";
-              await addDoc(collection(db, 'offers'), {
+              
+              const payload: any = {
                 ...offer,
                 store: merchantName,
                 merchantId: auth.currentUser.uid,
                 distance: '1 Km', // Placeholder until GPS is implemented
+              };
+
+              // Firestore strictly forbids undefined values, so we delete them
+              Object.keys(payload).forEach(key => {
+                if (payload[key] === undefined) {
+                  delete payload[key];
+                }
               });
+
+              await addDoc(collection(db, 'offers'), payload);
             } catch (error) {
               console.error("Error adding offer to Firestore:", error);
             }
