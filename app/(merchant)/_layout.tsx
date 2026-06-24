@@ -1,8 +1,15 @@
 import { Tabs } from 'expo-router';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useMerchantStore } from '../../store/useMerchantStore';
+import { useEffect } from 'react';
 
 export default function MerchantLayout() {
+  const { fetchProfile } = useMerchantStore();
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
   return (
     <Tabs screenOptions={{ 
       headerShown: true,

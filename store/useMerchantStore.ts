@@ -15,6 +15,7 @@ export interface MerchantProfile {
   businessPhone: string;
   businessAddress: string;
   businessEmail: string;
+  profilePic?: string;
 }
 
 interface MerchantState {
@@ -33,7 +34,8 @@ const initialProfile: MerchantProfile = {
   country: '',
   businessPhone: '',
   businessAddress: '',
-  businessEmail: ''
+  businessEmail: '',
+  profilePic: ''
 };
 
 export const useMerchantStore = create<MerchantState>()(
@@ -48,7 +50,7 @@ export const useMerchantStore = create<MerchantState>()(
 
         if (isFirebaseInitialized && db && currentUser) {
           try {
-            await setDoc(doc(db, 'stores', currentUser.uid), {
+            await setDoc(doc(db, 'users', currentUser.uid), {
               ...newProfile,
               name: newProfile.businessName || "Unnamed Store",
               category: newProfile.businessType || "Retail",
@@ -63,7 +65,7 @@ export const useMerchantStore = create<MerchantState>()(
         const currentUser = auth?.currentUser;
         if (isFirebaseInitialized && db && currentUser) {
           try {
-            const docSnap = await getDoc(doc(db, 'stores', currentUser.uid));
+            const docSnap = await getDoc(doc(db, 'users', currentUser.uid));
             if (docSnap.exists()) {
               set({ profile: { ...initialProfile, ...docSnap.data() } as MerchantProfile });
             }

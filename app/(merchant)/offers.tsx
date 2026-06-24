@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Modal, TextInput } from 'react-native';
 import { useOfferStore, Offer } from '../../store/useOfferStore';
 import { Ionicons } from '@expo/vector-icons';
+import { auth } from '../../config/firebase';
 
 export default function MerchantOffers() {
   const { offers, deleteOffer, updateOffer } = useOfferStore();
+  const myOffers = offers.filter(o => o.merchantId === auth?.currentUser?.uid);
   
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   
@@ -56,13 +58,13 @@ export default function MerchantOffers() {
       </View>
       
       <ScrollView className="flex-1 mt-2" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {offers.length === 0 ? (
+        {myOffers.length === 0 ? (
           <View className="items-center justify-center py-20 mt-10">
             <Ionicons name="pricetag-outline" size={64} color="#d1d5db" />
             <Text className="text-gray-400 mt-4 text-lg">No active offers</Text>
           </View>
         ) : (
-          offers.map((offer, i) => (
+          myOffers.map((offer, i) => (
             <View key={offer.id} className="bg-white mx-4 mb-6 rounded-3xl shadow-md border border-gray-100 overflow-hidden">
               
               {/* Deal Image with Overlay View Count */}

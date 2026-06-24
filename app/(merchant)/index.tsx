@@ -1,11 +1,23 @@
-import { View, Text, Platform, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, Platform, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useMerchantStore } from '../../store/useMerchantStore';
+import { useOfferStore } from '../../store/useOfferStore';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { auth } from '../../config/firebase';
 
 export default function MerchantProfile() {
   const { logout } = useAuthStore();
+  const { profile, fetchProfile } = useMerchantStore();
+  const { offers } = useOfferStore();
   const router = useRouter();
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const myOffers = offers.filter(o => o.merchantId === auth?.currentUser?.uid);
 
   const handleLogout = () => {
     logout();
@@ -26,13 +38,17 @@ export default function MerchantProfile() {
         {/* Premium Profile Header */}
         <View className="bg-white pt-16 pb-8 px-6 rounded-b-[40px] shadow-sm mb-6 items-center border-b border-gray-100">
           <View className="relative mb-5">
-            <View className="w-28 h-28 bg-red-50 rounded-full items-center justify-center border-4 border-white shadow-md shadow-brand/20">
-              <Text className="text-5xl">🏪</Text>
+            <View className="w-28 h-28 bg-red-50 rounded-full items-center justify-center border-4 border-white shadow-md shadow-brand/20 overflow-hidden">
+              {profile.profilePic ? (
+                <Image source={{ uri: profile.profilePic }} className="w-full h-full" resizeMode="cover" />
+              ) : (
+                <Text className="text-5xl">🏪</Text>
+              )}
             </View>
             <View className="absolute bottom-0 right-0 bg-green-500 w-6 h-6 rounded-full border-4 border-white" />
           </View>
           
-          <Text className="text-3xl font-extrabold text-gray-900 mb-1 tracking-tight">Pizza Hut (Local)</Text>
+          <Text className="text-3xl font-extrabold text-gray-900 mb-1 tracking-tight">{profile.businessName || "Unnamed Store"}</Text>
           <View className="flex-row items-center bg-gray-50 px-3 py-1.5 rounded-full mt-2 border border-gray-100">
             <Ionicons name="checkmark-circle" size={16} color="#10b981" />
             <Text className="text-gray-600 font-bold text-xs ml-1.5">Verified Merchant</Text>
@@ -43,7 +59,7 @@ export default function MerchantProfile() {
         <View className="px-6 mb-8 flex-row justify-between">
           <View className="flex-1 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mr-2 items-center">
             <Ionicons name="pricetags" size={28} color="#ED1C24" className="mb-2" />
-            <Text className="text-3xl font-black text-gray-900 mb-1">12</Text>
+            <Text className="text-3xl font-black text-gray-900 mb-1">{myOffers.length}</Text>
             <Text className="text-xs text-gray-500 font-bold uppercase tracking-wider">Active Deals</Text>
           </View>
           <View className="flex-1 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 ml-2 items-center">
