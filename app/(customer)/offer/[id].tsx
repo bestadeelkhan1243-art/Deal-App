@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
 import { useOfferStore } from '../../../store/useOfferStore';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { usePopup } from '../../../components/ui/PopupProvider';
@@ -15,8 +17,29 @@ export default function OfferDetails() {
   const { showPopup } = usePopup();
 
   const [isClaiming, setIsClaiming] = useState(false);
+  const [hasClaimed, setHasClaimed] = useState(false);
+  const [loadingClaimStatus, setLoadingClaimStatus] = useState(true);
 
   const offer = offers.find(o => o.id === id);
+
+  useEffect(() => {
+    const checkClaimStatus = async () => {
+      if (user && db && offer) {
+        try {
+          const claimsRef = collection(db, 'claims');
+          const q = query(claimsRef, where('offerId', '==', offer.id), where('customerId', '==', user.uid));
+          const snapshot = await getDocs(q);
+          if (!snapshot.empty) {
+            setHasClaimed(true);
+          }
+        } catch (e) {
+          console.error("Error checking claim status", e);
+        }
+      }
+      setLoadingClaimStatus(false);
+    };
+    checkClaimStatus();
+  }, [user, offer?.id]);
 
   if (!offer) {
     return (
@@ -44,6 +67,7 @@ export default function OfferDetails() {
     setIsClaiming(false);
 
     if (result.success) {
+      setHasClaimed(true);
       showPopup('success', 'Offer Claimed!', offer.requiresCoupon && offer.couponCode 
         ? `Your secret code is: ${offer.couponCode}` 
         : 'Show this app at the store to redeem your deal.');
@@ -128,15 +152,15 @@ export default function OfferDetails() {
       {/* Floating Claim Button */}
       <View className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg pt-4 pb-8 px-6 border-t border-gray-100">
         <TouchableOpacity 
-          disabled={isInactive || isClaiming}
-          onPress={handleClaim}
-          className={`py-4 rounded-2xl items-center justify-center flex-row shadow-lg ${isInactive ? 'bg-gray-300 shadow-none' : 'bg-brand shadow-brand/30'}`}
+          disabled={isInactive || isClaiming || hasClaimed || loadingClaimStatus}
+          onPress={hasClaimed ? undefined : handleClaim}
+          className={`py-4 rounded-2xl items-center justify-center flex-row shadow-lg ${isInactive || hasClaimed ? 'bg-gray-300 shadow-none' : 'bg-brand shadow-brand/30'}`}
         >
-          {isClaiming ? (
+          {isClaiming || loadingClaimStatus ? (
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white font-bold text-lg tracking-wider">
-              {isExpired ? 'EXPIRED' : isSoldOut ? 'SOLD OUT' : 'CLAIM THIS DEAL'}
+              {hasClaimed ? 'ALREADY CLAIMED' : isExpired ? 'EXPIRED' : isSoldOut ? 'SOLD OUT' : 'CLAIM THIS DEAL'}
             </Text>
           )}
         </TouchableOpacity>
