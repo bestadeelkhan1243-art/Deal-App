@@ -108,8 +108,8 @@ export default function MerchantOffers() {
                   </View>
                 )}
                 <View className="absolute top-4 right-4 bg-black/60 rounded-full px-3 py-1.5 flex-row items-center backdrop-blur-sm">
-                  <Ionicons name="eye" size={14} color="white" />
-                  <Text className="text-white text-xs font-bold ml-1.5">{Math.floor(Math.random() * 500) + 50}</Text>
+                  <Ionicons name="ticket" size={14} color="white" />
+                  <Text className="text-white text-xs font-bold ml-1.5">{offer.claimedCount || 0}</Text>
                 </View>
               </View>
 

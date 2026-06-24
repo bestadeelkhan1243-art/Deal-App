@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -19,6 +19,15 @@ export default function OfferDetails() {
   const [isClaiming, setIsClaiming] = useState(false);
   const [hasClaimed, setHasClaimed] = useState(false);
   const [loadingClaimStatus, setLoadingClaimStatus] = useState(true);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const screenWidth = Dimensions.get('window').width;
+
+  const handleScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / screenWidth);
+    setActiveSlide(index);
+  };
 
   const offer = offers.find(o => o.id === id);
 
@@ -82,17 +91,39 @@ export default function OfferDetails() {
         {/* Full Image Header */}
         <View className="relative w-full h-80 bg-gray-200">
           {offer.imageUrls && offer.imageUrls.length > 0 ? (
-            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} className="w-full h-full">
-              {offer.imageUrls.map((url, index) => (
-                <Image 
-                  key={index}
-                  source={{ uri: url }}
-                  style={{ width: 400, height: '100%' }}
-                  resizeMode="cover"
-                  className="w-screen"
-                />
-              ))}
-            </ScrollView>
+            <>
+              <ScrollView 
+                horizontal 
+                pagingEnabled 
+                showsHorizontalScrollIndicator={false} 
+                className="w-full h-full"
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                snapToInterval={screenWidth}
+                decelerationRate="fast"
+              >
+                {offer.imageUrls.map((url, index) => (
+                  <Image 
+                    key={index}
+                    source={{ uri: url }}
+                    style={{ width: screenWidth, height: '100%' }}
+                    resizeMode="cover"
+                  />
+                ))}
+              </ScrollView>
+              
+              {/* Pagination Dots */}
+              {offer.imageUrls.length > 1 && (
+                <View className="absolute bottom-12 w-full flex-row justify-center space-x-2">
+                  {offer.imageUrls.map((_, idx) => (
+                    <View 
+                      key={idx} 
+                      className={`h-2 rounded-full ${activeSlide === idx ? 'w-4 bg-white' : 'w-2 bg-white/50'}`} 
+                    />
+                  ))}
+                </View>
+              )}
+            </>
           ) : offer.imageUrl ? (
             <Image 
               source={{ uri: offer.imageUrl }}
