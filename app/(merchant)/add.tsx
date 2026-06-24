@@ -27,7 +27,8 @@ export default function MerchantAddOffer() {
 
   const [imageUrl, setImageUrl] = useState('');
 
-  const [newExpiry, setNewExpiry] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [requiresCoupon, setRequiresCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState('');
 
@@ -66,13 +67,14 @@ export default function MerchantAddOffer() {
         specificBranchName: branchType === 'Specific Location' ? specificBranchName.trim() : undefined,
         imageUrl,
         status: 'Active',
-        expiry: newExpiry.trim() || 'No Expiry Set',
+        startDate: startDate.trim(),
+        endDate: endDate.trim(),
         requiresCoupon,
         couponCode: finalCouponCode
       });
       
       // Reset
-      setNewTitle(''); setNewDesc(''); setDiscountValue(''); setNewExpiry('');
+      setNewTitle(''); setNewDesc(''); setDiscountValue(''); setStartDate(''); setEndDate('');
       setLimitCount(''); setImageUrl(''); setBranchType('All Branches'); setSpecificBranchName('');
       setRequiresCoupon(false); setCouponCode('');
       setDiscountType('Percentage'); setLimitType('Unlimited');
@@ -215,12 +217,19 @@ export default function MerchantAddOffer() {
           )}
         </View>
 
-        <Text className="text-gray-700 font-bold mb-2 ml-1">Expiry (Optional)</Text>
-        <TextInput 
-          value={newExpiry} onChangeText={setNewExpiry}
-          placeholder="e.g. End of day"
-          className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 font-medium"
-        />
+        <Text className="text-gray-700 font-bold mb-2 ml-1">Duration (YYYY-MM-DD)</Text>
+        <View className="flex-row justify-between mb-6">
+          <TextInput 
+            value={startDate} onChangeText={setStartDate}
+            placeholder="Start: e.g. 2026-06-01"
+            className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200 font-medium mr-2"
+          />
+          <TextInput 
+            value={endDate} onChangeText={setEndDate}
+            placeholder="End: e.g. 2026-06-05"
+            className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200 font-medium ml-2"
+          />
+        </View>
 
         <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-8">
           <View className="flex-row justify-between items-center">

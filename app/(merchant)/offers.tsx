@@ -104,7 +104,7 @@ export default function MerchantOffers() {
                   </View>
                   <View>
                     <Text className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Valid Dates</Text>
-                    <Text className="text-sm text-gray-800 font-semibold mt-0.5">15.06 to 25.06.2026</Text>
+                    <Text className="text-sm text-gray-800 font-semibold mt-0.5">{offer.startDate || 'Start'} to {offer.endDate || 'End'}</Text>
                   </View>
                 </View>
 

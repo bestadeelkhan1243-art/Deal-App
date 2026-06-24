@@ -1,12 +1,52 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Platform, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useRouter } from 'expo-router';
+import { useOfferStore, Offer } from '../../store/useOfferStore';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 
 export default function CustomerProfile() {
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const { offers } = useOfferStore();
   const router = useRouter();
+
+  const [claimedOffers, setClaimedOffers] = useState<{ claimId: string, offer: Offer, claimedAt: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClaims = async () => {
+      if (!user || !db) return;
+      
+      try {
+        const claimsRef = collection(db, 'claims');
+        const q = query(claimsRef, where('customerId', '==', user.uid));
+        const snapshot = await getDocs(q);
+        
+        const claims: any[] = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const offerDetail = offers.find(o => o.id === data.offerId);
+          if (offerDetail) {
+            claims.push({
+              claimId: doc.id,
+              offer: offerDetail,
+              claimedAt: data.claimedAt
+            });
+          }
+        });
+        
+        setClaimedOffers(claims.sort((a, b) => new Date(b.claimedAt).getTime() - new Date(a.claimedAt).getTime()));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClaims();
+  }, [user, offers]);
 
   const handleLogout = () => {
     logout();
@@ -16,66 +56,93 @@ export default function CustomerProfile() {
       if (router.canDismiss()) {
         router.dismissAll();
       }
+      router.replace('/');
     }
   };
 
-  const menuItems = [
-    { title: 'Land', icon: 'earth-outline' },
-    { title: 'Location', icon: 'location-outline' },
-    { title: 'Help & contact', icon: 'help-circle-outline' },
-    { title: 'Rate', icon: 'star-outline' },
-    { title: 'About us', icon: 'information-circle-outline' },
-  ];
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="px-6 py-6 border-b border-gray-100 flex-row items-center">
-        <Ionicons name="arrow-back" size={24} color="black" />
-        <Text className="text-xl font-bold text-gray-900 ml-4">Profile - private</Text>
-      </View>
-
-      <ScrollView className="flex-1 bg-white p-6" showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         
         {/* Profile Header */}
-        <View className="items-center mb-8 mt-4">
-          <View className="w-24 h-24 bg-gray-100 rounded-full items-center justify-center mb-4 border border-gray-200">
-            <Ionicons name="person" size={40} color="#9CA3AF" />
+        <View className="bg-white pt-16 pb-8 px-6 rounded-b-[40px] shadow-sm mb-6 items-center border-b border-gray-100">
+          <View className="w-24 h-24 bg-gray-100 rounded-full items-center justify-center mb-4 border-4 border-white shadow-sm">
+            <Ionicons name="person" size={40} color="#9ca3af" />
           </View>
-          <Text className="text-2xl font-bold text-gray-900 mb-1">Look Deal</Text>
-          <Text className="text-gray-500 mb-4">Lookdeal@gmail.com</Text>
+          <Text className="text-2xl font-extrabold text-gray-900 tracking-tight">{user?.email?.split('@')[0] || 'Customer'}</Text>
+          <Text className="text-gray-500 font-medium mt-1">{user?.email}</Text>
+        </View>
+
+        {/* Claimed Offers Section */}
+        <View className="px-6 mb-8">
+          <Text className="text-xl font-bold text-gray-900 mb-4">My Claimed Deals</Text>
           
-          <TouchableOpacity 
-            onPress={() => router.push('/(customer)/personal')}
-            className="bg-red-50 px-6 py-2 rounded-full border border-red-100"
-          >
-            <Text className="text-red-600 font-bold text-sm">Edit Profile</Text>
-          </TouchableOpacity>
+          {loading ? (
+            <Text className="text-gray-500 font-medium text-center py-8">Loading your claims...</Text>
+          ) : claimedOffers.length === 0 ? (
+            <View className="bg-white p-8 rounded-3xl border border-gray-100 items-center justify-center">
+              <Ionicons name="ticket-outline" size={48} color="#e5e7eb" className="mb-3" />
+              <Text className="text-gray-500 font-medium text-center">You haven't claimed any deals yet.</Text>
+              <TouchableOpacity onPress={() => router.push('/(customer)')} className="mt-4">
+                <Text className="text-brand font-bold">Browse Deals</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            claimedOffers.map((claim) => (
+              <TouchableOpacity 
+                key={claim.claimId}
+                onPress={() => router.push(`/(customer)/offer/${claim.offer.id}`)}
+                className="bg-white rounded-2xl p-4 mb-4 flex-row items-center border border-gray-100 shadow-sm"
+              >
+                <View className="w-16 h-16 rounded-xl bg-gray-100 mr-4 overflow-hidden">
+                  <Image 
+                    source={claim.offer.imageUrl ? { uri: claim.offer.imageUrl } : require('../../assets/images/pizza_deal.png')}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-gray-900 font-bold text-base" numberOfLines={1}>{claim.offer.title}</Text>
+                  <Text className="text-gray-500 font-medium text-xs mt-1">{claim.offer.store}</Text>
+                  
+                  {claim.offer.requiresCoupon && claim.offer.couponCode && (
+                    <View className="mt-2 bg-gray-50 self-start px-2 py-1 rounded-md border border-gray-200">
+                      <Text className="text-brand font-bold text-xs">Code: {claim.offer.couponCode}</Text>
+                    </View>
+                  )}
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
-        {/* Menu Options */}
-        <View className="bg-gray-50 rounded-2xl overflow-hidden mb-6">
-          {menuItems.map((item, index) => (
-            <TouchableOpacity 
-              key={item.title} 
-              className={`flex-row items-center p-4 bg-gray-50 ${index !== menuItems.length - 1 ? 'border-b border-gray-200' : ''}`}
-              onPress={() => item.route && router.push(item.route as any)}
-            >
-              <Ionicons name={item.icon as any} size={24} color="#4B5563" />
-              <Text className="text-gray-700 font-medium text-base ml-3 flex-1">{item.title}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+        {/* Account Settings */}
+        <View className="px-6 pb-12">
+          <Text className="text-xl font-bold text-gray-900 mb-4">Settings</Text>
+          
+          <View className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100 mb-6">
+            <TouchableOpacity className="flex-row items-center p-4 border-b border-gray-50">
+              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center mr-4">
+                <Ionicons name="notifications" size={20} color="#4b5563" />
+              </View>
+              <Text className="flex-1 text-base font-bold text-gray-900">Notifications</Text>
+              <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
             </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Logout */}
-        <TouchableOpacity 
-          className="flex-row items-center justify-center p-4"
-          onPress={handleLogout}
-        >
-          <Text className="text-gray-500 font-medium text-base">Logout</Text>
-        </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={handleLogout} 
+              className="flex-row items-center p-4"
+            >
+              <View className="w-10 h-10 bg-red-50 rounded-full items-center justify-center mr-4">
+                <Ionicons name="log-out" size={20} color="#ED1C24" />
+              </View>
+              <Text className="flex-1 text-base font-bold text-brand">Logout</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

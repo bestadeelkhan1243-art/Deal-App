@@ -20,7 +20,9 @@ export interface Offer {
   specificBranchName?: string;
   imageUrl?: string;
   status: 'Active' | 'Paused';
-  expiry: string;
+  startDate?: string;
+  endDate?: string;
+  claimedCount?: number;
   store: string;
   distance: string;
   requiresCoupon?: boolean;
@@ -34,6 +36,7 @@ interface OfferState {
   updateOffer: (id: string, updates: Partial<Offer>) => Promise<void>;
   toggleOfferStatus: (id: string) => Promise<void>;
   deleteOffer: (id: string) => Promise<void>;
+  claimOffer: (offerId: string) => Promise<{ success: boolean; message: string }>;
   initOffersListener: () => (() => void) | undefined;
 }
 
@@ -45,7 +48,9 @@ const initialMockOffers: Offer[] = [
     originalPrice: '$20',
     discountPrice: '$10',
     status: 'Active', 
-    expiry: 'Tomorrow',
+    startDate: '2026-06-01',
+    endDate: '2026-06-05',
+    claimedCount: 15,
     store: "Luigi's Pizzeria",
     distance: '1.2 km',
     requiresCoupon: true,
@@ -58,7 +63,9 @@ const initialMockOffers: Offer[] = [
     originalPrice: '$6',
     discountPrice: '$3',
     status: 'Active', 
-    expiry: 'In 2 hours',
+    startDate: '2026-06-01',
+    endDate: '2026-06-02',
+    claimedCount: 40,
     store: "Brew & Co. Coffee",
     distance: '0.5 km',
     requiresCoupon: false
@@ -88,7 +95,9 @@ export const useOfferStore = create<OfferState>((set, get) => {
                 originalPrice: data.originalPrice || '',
                 discountPrice: data.discountPrice || '',
                 status: data.status || 'Active',
-                expiry: data.expiry || 'No Expiry',
+                startDate: data.startDate || '',
+                endDate: data.endDate || '',
+                claimedCount: data.claimedCount || 0,
                 store: data.store || 'Local Store',
                 distance: data.distance || '0.1 km',
                 requiresCoupon: data.requiresCoupon || false,
@@ -195,6 +204,67 @@ export const useOfferStore = create<OfferState>((set, get) => {
         set((state) => ({
           offers: state.offers.filter(o => o.id !== id)
         }));
+      }
+    },
+
+    claimOffer: async (offerId) => {
+      if (!isFirebaseInitialized || !db || !auth.currentUser) {
+        return { success: false, message: "You must be logged in to claim offers." };
+      }
+
+      try {
+        const customerId = auth.currentUser.uid;
+        
+        // Check if already claimed
+        const claimsRef = collection(db, 'claims');
+        const q = query(claimsRef, where('offerId', '==', offerId), where('customerId', '==', customerId));
+        const { getDocs } = await import('firebase/firestore');
+        const existingClaims = await getDocs(q);
+        
+        if (!existingClaims.empty) {
+          return { success: false, message: "You have already claimed this offer!" };
+        }
+
+        // Get the current offer to check limits
+        const { getDoc, increment } = await import('firebase/firestore');
+        const offerRef = doc(db, 'offers', offerId);
+        const offerSnap = await getDoc(offerRef);
+        
+        if (!offerSnap.exists()) {
+          return { success: false, message: "Offer not found." };
+        }
+
+        const offerData = offerSnap.data();
+        
+        // Check dates
+        const now = new Date().toISOString();
+        if (offerData.endDate && now > offerData.endDate) {
+          return { success: false, message: "This offer has expired." };
+        }
+
+        // Check limits
+        const currentClaimCount = offerData.claimedCount || 0;
+        if (offerData.limitType === 'Limited' && offerData.limitCount && currentClaimCount >= offerData.limitCount) {
+          return { success: false, message: "This offer is sold out!" };
+        }
+
+        // Record the claim
+        await addDoc(claimsRef, {
+          offerId,
+          customerId,
+          claimedAt: new Date().toISOString(),
+          status: 'Active'
+        });
+
+        // Increment the claimed count on the offer
+        await updateDoc(offerRef, {
+          claimedCount: increment(1)
+        });
+
+        return { success: true, message: "Offer claimed successfully!" };
+      } catch (error) {
+        console.error("Error claiming offer:", error);
+        return { success: false, message: "A network error occurred while claiming." };
       }
     }
   };

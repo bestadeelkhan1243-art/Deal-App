@@ -10,7 +10,24 @@ export default function CustomerHome() {
   
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const activeOffers = (offers || []).filter(o => o.status === 'Active');
+  const now = new Date().toISOString();
+
+  // Sort offers so active ones show first, expired/sold out ones show at bottom
+  const sortedOffers = [...(offers || [])].sort((a, b) => {
+    const aExpired = a.endDate && now > a.endDate;
+    const bExpired = b.endDate && now > b.endDate;
+    const aSoldOut = a.limitType === 'Limited' && a.limitCount && a.claimedCount !== undefined && a.claimedCount >= a.limitCount;
+    const bSoldOut = b.limitType === 'Limited' && b.limitCount && b.claimedCount !== undefined && b.claimedCount >= b.limitCount;
+    
+    const aInactive = aExpired || aSoldOut || a.status !== 'Active';
+    const bInactive = bExpired || bSoldOut || b.status !== 'Active';
+    
+    if (aInactive && !bInactive) return 1;
+    if (!aInactive && bInactive) return -1;
+    return 0;
+  });
+
+  const visibleOffers = sortedOffers.filter(o => o.status === 'Active');
 
   const categories = [
     { name: 'All', icon: 'grid' },
@@ -62,12 +79,17 @@ export default function CustomerHome() {
 
       {/* Feed */}
       <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        {activeOffers.map((offer, i) => (
+        {visibleOffers.map((offer, i) => {
+          const isExpired = offer.endDate && now > offer.endDate;
+          const isSoldOut = offer.limitType === 'Limited' && offer.limitCount && offer.claimedCount !== undefined && offer.claimedCount >= offer.limitCount;
+          const isInactive = isExpired || isSoldOut;
+
+          return (
           <TouchableOpacity 
             key={offer.id} 
-            className="bg-white rounded-[32px] overflow-hidden mb-8 shadow-xl shadow-gray-200/50 border border-gray-100"
+            className={`bg-white rounded-[32px] overflow-hidden mb-8 shadow-xl shadow-gray-200/50 border border-gray-100 ${isInactive ? 'opacity-70' : ''}`}
             activeOpacity={0.95}
-            onPress={() => router.push(`/offer/${offer.id}`)}
+            onPress={() => router.push(`/(customer)/offer/${offer.id}`)}
           >
             
             {/* Image Area */}
@@ -78,9 +100,19 @@ export default function CustomerHome() {
                 resizeMode="cover"
               />
               {/* Premium Top Left Badge */}
-              <View className="absolute top-4 left-4 bg-brand/90 backdrop-blur-md rounded-2xl px-4 py-1.5 shadow-sm">
-                <Text className="text-white font-bold text-xs uppercase tracking-wider">Top Deal</Text>
-              </View>
+              {isExpired ? (
+                <View className="absolute top-4 left-4 bg-gray-800/90 backdrop-blur-md rounded-2xl px-4 py-1.5 shadow-sm">
+                  <Text className="text-white font-bold text-xs uppercase tracking-wider">Expired</Text>
+                </View>
+              ) : isSoldOut ? (
+                <View className="absolute top-4 left-4 bg-gray-800/90 backdrop-blur-md rounded-2xl px-4 py-1.5 shadow-sm">
+                  <Text className="text-white font-bold text-xs uppercase tracking-wider">Sold Out</Text>
+                </View>
+              ) : (
+                <View className="absolute top-4 left-4 bg-brand/90 backdrop-blur-md rounded-2xl px-4 py-1.5 shadow-sm">
+                  <Text className="text-white font-bold text-xs uppercase tracking-wider">Top Deal</Text>
+                </View>
+              )}
               {/* Distance Badge */}
               <View className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl px-3 py-1.5 shadow-sm flex-row items-center">
                 <Ionicons name="location" size={14} color="#ED1C24" />
@@ -96,12 +128,12 @@ export default function CustomerHome() {
               
               <View className="flex-row items-center mt-3">
                 <Ionicons name="time-outline" size={16} color="#9ca3af" />
-                <Text className="text-sm text-gray-500 font-medium ml-1.5">Valid: 01.06.26 - 05.06.26</Text>
+                <Text className="text-sm text-gray-500 font-medium ml-1.5">Valid: {offer.startDate || 'Start'} - {offer.endDate || 'End'}</Text>
               </View>
             </View>
           </TouchableOpacity>
-        ))}
-        {activeOffers.length === 0 && (
+        )})}
+        {visibleOffers.length === 0 && (
           <View className="items-center justify-center mt-12">
             <Ionicons name="search-outline" size={64} color="#e5e7eb" />
             <Text className="text-center text-gray-500 mt-4 text-lg font-medium">No active deals found.</Text>

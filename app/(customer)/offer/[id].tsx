@@ -1,137 +1,144 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useOfferStore } from '../../../store/useOfferStore';
-import { useSavedStore } from '../../../store/useSavedStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { usePopup } from '../../../components/ui/PopupProvider';
+import { Button } from '../../../components/ui/Button';
 
 export default function OfferDetails() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { offers } = useOfferStore();
-  const { isSaved, toggleSave } = useSavedStore();
+  const { offers, claimOffer } = useOfferStore();
+  const { user } = useAuthStore();
   const { showPopup } = usePopup();
+
+  const [isClaiming, setIsClaiming] = useState(false);
 
   const offer = offers.find(o => o.id === id);
 
-  const handleClaim = () => {
-    showPopup('success', 'Deal Claimed!', 'Present this at the store to redeem your offer.');
-  };
-
   if (!offer) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text>Offer not found</Text>
+      <View className="flex-1 bg-white items-center justify-center">
+        <Ionicons name="alert-circle-outline" size={64} color="#e5e7eb" />
+        <Text className="text-gray-500 mt-4 text-lg font-medium">Offer not found</Text>
+        <Button title="Go Back" onPress={() => router.back()} className="mt-6" />
       </View>
     );
   }
 
-  return (
-    <View className="flex-1 bg-[#f9fafb]">
-      {/* Header */}
-      <View className="absolute top-10 left-4 z-10 flex-row justify-between right-4">
-        <TouchableOpacity onPress={() => router.back()} className="bg-white/80 p-2 rounded-full">
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => toggleSave(offer.id)} className="bg-white/80 p-2 rounded-full">
-          <Ionicons name={isSaved(offer.id) ? "bookmark" : "bookmark-outline"} size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+  const now = new Date().toISOString();
+  const isExpired = !!offer.endDate && now > offer.endDate;
+  const isSoldOut = offer.limitType === 'Limited' && !!offer.limitCount && offer.claimedCount !== undefined && offer.claimedCount >= offer.limitCount;
+  const isInactive = isExpired || isSoldOut || offer.status !== 'Active';
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Image */}
-        <View className="relative h-80 w-full bg-white">
+  const handleClaim = async () => {
+    if (!user) {
+      showPopup('error', 'Login Required', 'Please log in to claim this offer.');
+      return;
+    }
+
+    setIsClaiming(true);
+    const result = await claimOffer(offer.id);
+    setIsClaiming(false);
+
+    if (result.success) {
+      showPopup('success', 'Offer Claimed!', offer.requiresCoupon && offer.couponCode 
+        ? `Your secret code is: ${offer.couponCode}` 
+        : 'Show this app at the store to redeem your deal.');
+    } else {
+      showPopup('error', 'Claim Failed', result.message);
+    }
+  };
+
+  return (
+    <View className="flex-1 bg-white">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        {/* Full Image Header */}
+        <View className="relative w-full h-80 bg-gray-200">
           <Image 
             source={offer.imageUrl ? { uri: offer.imageUrl } : require('../../../assets/images/pizza_deal.png')}
             style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
           />
-          <View className="absolute top-0 left-0 bg-red-600 w-16 h-10 rounded-br-xl" />
+          
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="absolute top-12 left-4 w-12 h-12 bg-black/30 backdrop-blur-md rounded-full items-center justify-center"
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+
+          {isExpired && (
+            <View className="absolute top-12 right-4 bg-gray-900/90 rounded-2xl px-4 py-1.5 shadow-sm">
+              <Text className="text-white font-bold tracking-wider">EXPIRED</Text>
+            </View>
+          )}
+          {isSoldOut && !isExpired && (
+            <View className="absolute top-12 right-4 bg-gray-900/90 rounded-2xl px-4 py-1.5 shadow-sm">
+              <Text className="text-white font-bold tracking-wider">SOLD OUT</Text>
+            </View>
+          )}
         </View>
 
-        {/* Deal Info */}
-        <View className="bg-[#f9fafb] rounded-t-[32px] -mt-8 p-5">
-          {/* Title & Dates Row */}
-          <View className="flex-row justify-between items-end mb-4 mt-2">
-            <Text className="text-2xl font-bold text-gray-900 flex-1 mr-2">{offer.title}</Text>
-            <View className="items-end">
-              <Text className="text-[9px] text-gray-500 font-medium mb-1">Valid: 01.06.26 - 05.06.26</Text>
-              <Text className="text-xl font-bold text-gray-900">{offer.distance || '2 Km'}</Text>
+        {/* Content */}
+        <View className="px-6 py-6 -mt-8 bg-white rounded-t-[32px]">
+          <View className="flex-row justify-between items-start mb-2">
+            <Text className="text-3xl font-extrabold text-gray-900 flex-1 mr-4">{offer.title}</Text>
+          </View>
+          
+          <Text className="text-xl text-brand font-black mb-4">
+            {offer.discountPrice} <Text className="text-sm text-gray-400 line-through font-medium">{offer.originalPrice}</Text>
+          </Text>
+
+          <View className="flex-row items-center mb-6 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+            <View className="w-12 h-12 bg-white rounded-full items-center justify-center shadow-sm">
+              <Ionicons name="storefront" size={24} color="#ED1C24" />
+            </View>
+            <View className="ml-4 flex-1">
+              <Text className="text-gray-900 font-bold text-lg">{offer.store}</Text>
+              <Text className="text-gray-500 font-medium text-sm">{offer.distance || '2 Km'} away</Text>
             </View>
           </View>
 
+          <Text className="text-gray-900 font-bold text-lg mb-2">About this Deal</Text>
+          <Text className="text-gray-600 text-base leading-relaxed mb-6">
+            {offer.description}
+          </Text>
 
-          {/* Description */}
-          <View className="bg-white border border-gray-100 shadow-sm rounded-3xl p-5 mb-5 min-h-[100px]">
-            <Text className="text-sm text-gray-600 leading-relaxed">
-              {offer.description || `Enjoy this amazing deal from ${offer.store || 'our partner'}! This exclusive offer is available for a limited time only. Make sure to claim it before it expires and enjoy the best savings in town.`}
-            </Text>
+          <Text className="text-gray-900 font-bold text-lg mb-2">Valid Dates</Text>
+          <View className="flex-row items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6">
+            <Ionicons name="calendar-outline" size={24} color="#6b7280" />
+            <Text className="text-gray-700 font-medium ml-3 text-base">{offer.startDate || 'Start'} to {offer.endDate || 'End'}</Text>
           </View>
 
-          {/* Store Profile Box */}
-          <View className="bg-white border border-gray-100 shadow-sm rounded-3xl p-5 mb-2">
-            <View className="flex-row justify-between items-center mb-5">
-              <TouchableOpacity 
-                className="flex-row items-center border border-gray-200 rounded-full px-3 py-1.5"
-              >
-                <Ionicons name="person-add-outline" size={12} color="black" />
-                <Text className="text-[10px] font-medium ml-1 text-gray-600">Follow</Text>
-              </TouchableOpacity>
-
-              <View className="items-center flex-1 mx-2">
-                <Text className="text-sm font-bold text-gray-900">{offer.store || "Khaled Store"}</Text>
-                <View className="flex-row space-x-1 my-1">
-                  {[1,2,3,4,5].map(s => <Ionicons key={s} name="star" size={8} color="#2563eb" />)}
-                </View>
-                <Text className="text-[10px] text-gray-500 pb-0.5" numberOfLines={1}>
-                  {offer.branchType === 'Specific Location' ? 'Open until 10:00 PM' : 'Available Online'}
-                </Text>
-              </View>
-
-              <View className="w-12 h-12 rounded-full border border-gray-200 bg-white overflow-hidden justify-center items-center">
-                 <Image 
-                    source={require('../../../assets/images/pizza_deal.png')}
-                    style={{ width: '100%', height: '100%' }}
-                    resizeMode="cover"
-                  />
-              </View>
+          {offer.limitType === 'Limited' && (
+            <View className="flex-row items-center bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6">
+              <Ionicons name="people-outline" size={24} color="#6b7280" />
+              <Text className="text-gray-700 font-medium ml-3 text-base">
+                {offer.claimedCount || 0} / {offer.limitCount} claimed
+              </Text>
             </View>
-
-            {/* Bottom Actions */}
-            <View className="flex-row justify-between px-1">
-              <TouchableOpacity className="flex-row items-center bg-gray-50 px-3 py-2 rounded-full">
-                <Ionicons name="call-outline" size={12} color="black" />
-                <Text className="text-[10px] text-gray-600 ml-1">Call</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center bg-gray-50 px-3 py-2 rounded-full">
-                <Ionicons name="globe-outline" size={12} color="black" />
-                <Text className="text-[10px] text-gray-600 ml-1">Web</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center bg-gray-50 px-3 py-2 rounded-full">
-                <Ionicons name="arrow-redo-outline" size={12} color="black" />
-                <Text className="text-[10px] text-gray-600 ml-1">Share</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center bg-gray-50 px-3 py-2 rounded-full">
-                <Ionicons name="flag-outline" size={12} color="#ef4444" />
-                <Text className="text-[10px] text-gray-500 ml-1">Report</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          )}
 
         </View>
       </ScrollView>
 
-      {/* Sticky Bottom Action Buttons */}
-      <View className="flex-row justify-between space-x-2 px-5 py-4 bg-white border-t border-gray-100 pb-8">
-        <TouchableOpacity className="bg-[#f9fafb] border border-gray-100 shadow-sm rounded-2xl p-4 items-center justify-center aspect-square">
-          <Ionicons name="arrow-redo-outline" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => toggleSave(offer.id)} className="bg-[#f9fafb] border border-gray-100 shadow-sm rounded-2xl p-4 items-center justify-center aspect-square">
-          <Ionicons name={isSaved(offer.id) ? "bookmark" : "bookmark-outline"} size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleClaim} className="flex-1 bg-brand shadow-lg shadow-brand/40 rounded-2xl py-4 items-center justify-center ml-2">
-          <Text className="text-white font-black tracking-widest text-lg uppercase">Claim Deal</Text>
+      {/* Floating Claim Button */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg pt-4 pb-8 px-6 border-t border-gray-100">
+        <TouchableOpacity 
+          disabled={isInactive || isClaiming}
+          onPress={handleClaim}
+          className={`py-4 rounded-2xl items-center justify-center flex-row shadow-lg ${isInactive ? 'bg-gray-300 shadow-none' : 'bg-brand shadow-brand/30'}`}
+        >
+          {isClaiming ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-bold text-lg tracking-wider">
+              {isExpired ? 'EXPIRED' : isSoldOut ? 'SOLD OUT' : 'CLAIM THIS DEAL'}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
