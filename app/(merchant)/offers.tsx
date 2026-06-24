@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Modal, TextInput } from 'react-native';
 import { useOfferStore, Offer } from '../../store/useOfferStore';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../../config/firebase';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function MerchantOffers() {
   const { offers, deleteOffer, updateOffer } = useOfferStore();
-  const myOffers = offers.filter(o => o.merchantId === auth?.currentUser?.uid);
+  const { user } = useAuthStore();
+  const myOffers = offers.filter(o => o.merchantId === user?.uid);
   
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   

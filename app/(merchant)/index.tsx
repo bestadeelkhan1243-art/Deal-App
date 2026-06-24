@@ -5,19 +5,19 @@ import { useMerchantStore } from '../../store/useMerchantStore';
 import { useOfferStore } from '../../store/useOfferStore';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../../config/firebase';
 
 export default function MerchantProfile() {
   const { logout } = useAuthStore();
   const { profile, fetchProfile } = useMerchantStore();
   const { offers } = useOfferStore();
   const router = useRouter();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
-  const myOffers = offers.filter(o => o.merchantId === auth?.currentUser?.uid);
+  const myOffers = offers.filter(o => o.merchantId === user?.uid);
 
   const handleLogout = () => {
     logout();
