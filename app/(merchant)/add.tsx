@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, createElement } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Switch, Image } from 'react-native';
 import { Button } from '../../components/ui/Button';
 import { useOfferStore } from '../../store/useOfferStore';
@@ -27,8 +27,9 @@ export default function MerchantAddOffer() {
 
   const [imageUrl, setImageUrl] = useState('');
 
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const today = new Date().toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(today);
   const [requiresCoupon, setRequiresCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState('');
 
@@ -74,7 +75,7 @@ export default function MerchantAddOffer() {
       });
       
       // Reset
-      setNewTitle(''); setNewDesc(''); setDiscountValue(''); setStartDate(''); setEndDate('');
+      setNewTitle(''); setNewDesc(''); setDiscountValue(''); setStartDate(today); setEndDate(today);
       setLimitCount(''); setImageUrl(''); setBranchType('All Branches'); setSpecificBranchName('');
       setRequiresCoupon(false); setCouponCode('');
       setDiscountType('Percentage'); setLimitType('Unlimited');
@@ -217,18 +218,36 @@ export default function MerchantAddOffer() {
           )}
         </View>
 
-        <Text className="text-gray-700 font-bold mb-2 ml-1">Duration (YYYY-MM-DD)</Text>
+        <Text className="text-gray-700 font-bold mb-2 ml-1">Duration</Text>
         <View className="flex-row justify-between mb-6">
-          <TextInput 
-            value={startDate} onChangeText={setStartDate}
-            placeholder="Start: e.g. 2026-06-01"
-            className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200 font-medium mr-2"
-          />
-          <TextInput 
-            value={endDate} onChangeText={setEndDate}
-            placeholder="End: e.g. 2026-06-05"
-            className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200 font-medium ml-2"
-          />
+          <View className="flex-1 mr-2">
+            <Text className="text-gray-500 text-xs font-bold mb-1 ml-1 uppercase tracking-wider">Start Date</Text>
+            {Platform.OS === 'web' ? createElement('input', {
+              type: 'date',
+              value: startDate,
+              onChange: (e: any) => setStartDate(e.target.value),
+              style: { width: '100%', backgroundColor: '#f9fafb', padding: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontFamily: 'inherit', fontSize: '16px', color: '#111827' }
+            }) : (
+              <TextInput 
+                value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD"
+                className="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 font-medium"
+              />
+            )}
+          </View>
+          <View className="flex-1 ml-2">
+            <Text className="text-gray-500 text-xs font-bold mb-1 ml-1 uppercase tracking-wider">End Date</Text>
+            {Platform.OS === 'web' ? createElement('input', {
+              type: 'date',
+              value: endDate,
+              onChange: (e: any) => setEndDate(e.target.value),
+              style: { width: '100%', backgroundColor: '#f9fafb', padding: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontFamily: 'inherit', fontSize: '16px', color: '#111827' }
+            }) : (
+              <TextInput 
+                value={endDate} onChangeText={setEndDate} placeholder="YYYY-MM-DD"
+                className="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 font-medium"
+              />
+            )}
+          </View>
         </View>
 
         <View className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 mb-8">
