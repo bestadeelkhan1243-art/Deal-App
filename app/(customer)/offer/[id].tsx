@@ -41,6 +41,7 @@ export default function OfferDetails() {
 
   useEffect(() => {
     const checkClaimStatus = async () => {
+      setLoadingClaimStatus(true);
       if (user && db && offer) {
         try {
           const claimsRef = collection(db, 'claims');
@@ -48,10 +49,15 @@ export default function OfferDetails() {
           const snapshot = await getDocs(q);
           if (!snapshot.empty) {
             setHasClaimed(true);
+          } else {
+            setHasClaimed(false);
           }
         } catch (e) {
           console.error("Error checking claim status", e);
+          setHasClaimed(false);
         }
+      } else {
+        setHasClaimed(false);
       }
       setLoadingClaimStatus(false);
     };
