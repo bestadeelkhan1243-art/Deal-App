@@ -39,7 +39,6 @@ export default function SavedScreen() {
                 branchType={offer.branchType}
                 specificBranchName={offer.specificBranchName}
                 imageUrl={offer.imageUrl}
-                imageSource={i % 2 === 0 ? require('../../assets/images/pizza_deal.png') : require('../../assets/images/coffee_deal.png')}
                 badge={offer.discountPrice ? `${offer.discountPrice}` : "Top Deal"}
                 isSaved={isSaved(offer.id)}
                 onToggleSave={() => toggleSave(offer.id)}
@@ -67,13 +66,9 @@ export default function SavedScreen() {
                 {[1, 2, 3, 4].map((item) => (
                   <View key={`another-${item}`} className="w-48 mr-5 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
                     <View className="h-32 bg-gray-200">
-                    {offer.imageUrl ? (
-                      <Image source={{ uri: offer.imageUrl }} style={{width: '100%', height: '100%'}} resizeMode="cover" />
-                    ) : (
-                      <View className="w-full h-full items-center justify-center bg-gray-200">
+                      <View className="w-full h-full items-center justify-center">
                         <Ionicons name="image-outline" size={32} color="#9ca3af" />
                       </View>
-                    )}
                     </View>
                     <View className="p-4">
                       <View className="flex-row items-center mb-2">
