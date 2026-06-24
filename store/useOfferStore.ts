@@ -103,7 +103,9 @@ export const useOfferStore = create<OfferState>((set, get) => {
                 distance: data.distance || '0.1 km',
                 requiresCoupon: data.requiresCoupon || false,
                 couponCode: data.couponCode || '',
-                merchantId: data.merchantId
+                merchantId: data.merchantId,
+                imageUrl: data.imageUrl || '',
+                imageUrls: data.imageUrls || []
               });
             });
             set({ offers: dbOffers });
