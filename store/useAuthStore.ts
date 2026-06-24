@@ -10,6 +10,7 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useOfferStore } from './useOfferStore';
+import { useMerchantStore } from './useMerchantStore';
 
 type UserRole = 'customer' | 'merchant' | 'admin' | null;
 
@@ -48,6 +49,10 @@ export const useAuthStore = create<AuthState>((set) => {
         
         // Start listening to live offers now that we are authenticated
         useOfferStore.getState().initOffersListener();
+
+        if (resolvedRole === 'merchant') {
+          useMerchantStore.getState().fetchProfile();
+        }
       } else {
         set({ isLoggedIn: false, user: null, role: null, isLoading: false });
       }
