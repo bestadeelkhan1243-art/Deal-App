@@ -63,7 +63,7 @@ export default function CustomerHome() {
 
       {/* Categories */}
       <View className="bg-white pb-6 pt-2">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-6" contentContainerStyle={{ paddingRight: 24 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={true} className="pl-6" contentContainerStyle={{ paddingRight: 24 }}>
           {categories.map((cat) => {
             const isActive = selectedCategory === cat.name;
             return (

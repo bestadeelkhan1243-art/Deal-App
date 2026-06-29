@@ -165,7 +165,7 @@ export default function MerchantOffers() {
                 <View className={`self-start px-4 py-2.5 rounded-xl flex-row items-center ${offer.requiresCoupon ? 'bg-red-50 border border-red-100' : 'bg-gray-50 border border-gray-200'}`}>
                   <Ionicons name="ticket" size={16} color={offer.requiresCoupon ? '#e62020' : '#6B7280'} />
                   <Text className={`font-bold ml-2 text-sm ${offer.requiresCoupon ? 'text-red-600' : 'text-gray-600'}`}>
-                    {offer.requiresCoupon ? 'Code: Look Deal' : 'No Code Needed'}
+                    {offer.requiresCoupon ? `Code: ${offer.couponCode}` : 'No Code Needed'}
                   </Text>
                 </View>
 
