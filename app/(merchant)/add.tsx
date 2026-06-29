@@ -37,7 +37,7 @@ export default function MerchantAddOffer() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      quality: 0.5,
+      quality: 0.1,
       base64: true, 
     });
 
@@ -53,7 +53,7 @@ export default function MerchantAddOffer() {
     setImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCreateOffer = () => {
+  const handleCreateOffer = async () => {
     if (newTitle.trim() && discountValue.trim()) {
       const finalCouponCode = requiresCoupon 
         ? (couponCode.trim() || `DEAL-${Math.random().toString(36).substring(2, 6).toUpperCase()}`) 
@@ -61,7 +61,7 @@ export default function MerchantAddOffer() {
 
       const finalLimitCount = limitType === 'Limited' ? parseInt(limitCount, 10) || 0 : undefined;
 
-      addOffer({
+      const success = await addOffer({
         title: newTitle,
         description: newDesc,
         originalPrice: '', 
@@ -81,19 +81,23 @@ export default function MerchantAddOffer() {
         couponCode: finalCouponCode
       });
       
-      // Reset
-      setNewTitle(''); setNewDesc(''); setDiscountValue(''); setStartDate(today); setEndDate(today);
-      setLimitCount(''); setImageUrls([]); setBranchType('All Branches'); setSpecificBranchName('');
-      setRequiresCoupon(false); setCouponCode('');
-      setDiscountType('Percentage'); setLimitType('Unlimited');
-      
-      // Show success popup
-      showPopup('success', 'Offer Published!', 'Your deal is now live for all shoppers to see.');
-      
-      // Navigate back to offers list after delay
-      setTimeout(() => {
-        router.push('/(merchant)/offers');
-      }, 1000);
+      if (success) {
+        // Reset
+        setNewTitle(''); setNewDesc(''); setDiscountValue(''); setStartDate(today); setEndDate(today);
+        setLimitCount(''); setImageUrls([]); setBranchType('All Branches'); setSpecificBranchName('');
+        setRequiresCoupon(false); setCouponCode('');
+        setDiscountType('Percentage'); setLimitType('Unlimited');
+        
+        // Show success popup
+        showPopup('success', 'Offer Published!', 'Your deal is now live for all shoppers to see.');
+        
+        // Navigate back to offers list after delay
+        setTimeout(() => {
+          router.push('/(merchant)/offers');
+        }, 1000);
+      } else {
+        showPopup('error', 'Upload Failed', 'Images may be too large, or there is a network error. Try fewer photos.');
+      }
     } else {
       showPopup('error', 'Missing Fields', 'Please provide a title and a discount value.');
     }

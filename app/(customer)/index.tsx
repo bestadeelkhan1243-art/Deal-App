@@ -10,12 +10,12 @@ export default function CustomerHome() {
   
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const now = new Date().toISOString();
+  const todayStr = new Date().toISOString().split('T')[0];
 
   // Sort offers so active ones show first, expired/sold out ones show at bottom
   const sortedOffers = [...(offers || [])].sort((a, b) => {
-    const aExpired = a.endDate && now > a.endDate;
-    const bExpired = b.endDate && now > b.endDate;
+    const aExpired = a.endDate && todayStr > a.endDate;
+    const bExpired = b.endDate && todayStr > b.endDate;
     const aSoldOut = a.limitType === 'Limited' && a.limitCount && a.claimedCount !== undefined && a.claimedCount >= a.limitCount;
     const bSoldOut = b.limitType === 'Limited' && b.limitCount && b.claimedCount !== undefined && b.claimedCount >= b.limitCount;
     
@@ -80,7 +80,7 @@ export default function CustomerHome() {
       {/* Feed */}
       <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         {visibleOffers.map((offer, i) => {
-          const isExpired = offer.endDate && now > offer.endDate;
+          const isExpired = offer.endDate && todayStr > offer.endDate;
           const isSoldOut = offer.limitType === 'Limited' && offer.limitCount && offer.claimedCount !== undefined && offer.claimedCount >= offer.limitCount;
           const isInactive = isExpired || isSoldOut;
 

@@ -34,7 +34,7 @@ export interface Offer {
 interface OfferState {
   offers: Offer[];
   isLoading: boolean;
-  addOffer: (offer: Omit<Offer, 'id' | 'store' | 'distance'>) => Promise<void>;
+  addOffer: (offer: Omit<Offer, 'id' | 'store' | 'distance'>) => Promise<boolean>;
   updateOffer: (id: string, updates: Partial<Offer>) => Promise<void>;
   toggleOfferStatus: (id: string) => Promise<void>;
   deleteOffer: (id: string) => Promise<void>;
@@ -144,8 +144,10 @@ export const useOfferStore = create<OfferState>((set, get) => {
               });
 
               await addDoc(collection(db, 'offers'), payload);
+              return true;
             } catch (error) {
               console.error("Error adding offer to Firestore:", error);
+              return false;
             }
           } else {
             // Fallback for Demo Mode
@@ -157,6 +159,7 @@ export const useOfferStore = create<OfferState>((set, get) => {
                 distance: '1 Km'
               }, ...state.offers]
             }));
+            return true;
           }
         },
 
