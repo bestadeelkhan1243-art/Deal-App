@@ -27,14 +27,19 @@ export default function CustomerHome() {
     return 0;
   });
 
-  const visibleOffers = sortedOffers.filter(o => o.status === 'Active');
+  const visibleOffers = sortedOffers.filter(o => {
+    const isActive = o.status === 'Active';
+    const matchesCategory = selectedCategory === 'All' || o.category === selectedCategory;
+    return isActive && matchesCategory;
+  });
 
   const categories = [
     { name: 'All', icon: 'grid' },
-    { name: 'SuperMarkt', icon: 'cart' },
-    { name: 'Electronic', icon: 'laptop' },
-    { name: 'Fashion', icon: 'shirt' },
-    { name: 'More', icon: 'ellipsis-horizontal' }
+    { name: 'Supermarket & Grocery', icon: 'cart' },
+    { name: 'Restaurant & Cafe', icon: 'restaurant' },
+    { name: 'Clothing & Fashion', icon: 'shirt' },
+    { name: 'Electronics & Gadgets', icon: 'laptop' },
+    { name: 'Beauty, Salon & Spa', icon: 'sparkles' }
   ];
 
   return (

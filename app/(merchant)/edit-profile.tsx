@@ -23,7 +23,19 @@ export default function MerchantOnboarding() {
   const [businessEmail, setBusinessEmail] = useState(profile.businessEmail);
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const BUSINESS_CATEGORIES = ['Supermarket', 'Restaurant / Cafe', 'Electronics', 'Clothing / Fashion', 'Beauty & Spa', 'Entertainment', 'Other'];
+  const BUSINESS_CATEGORIES = [
+    'Supermarket & Grocery', 
+    'Restaurant & Cafe', 
+    'Fast Food & Takeaway', 
+    'Clothing & Fashion', 
+    'Electronics & Gadgets', 
+    'Beauty, Salon & Spa', 
+    'Health & Fitness', 
+    'Home & Furniture', 
+    'Automotive & Car Care', 
+    'Entertainment & Events', 
+    'Other'
+  ];
   // Sync state if profile loads from async storage slightly later
   useEffect(() => {
     setFirstName(profile.firstName);

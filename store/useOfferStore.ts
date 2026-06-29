@@ -29,6 +29,7 @@ export interface Offer {
   requiresCoupon?: boolean;
   couponCode?: string;
   merchantId?: string;
+  category?: string;
 }
 
 interface OfferState {
@@ -106,6 +107,7 @@ export const useOfferStore = create<OfferState>((set, get) => {
                 requiresCoupon: data.requiresCoupon || false,
                 couponCode: data.couponCode || '',
                 merchantId: data.merchantId,
+                category: data.category || 'Other',
                 imageUrl: data.imageUrl || '',
                 imageUrls: data.imageUrls || []
               });
@@ -128,11 +130,13 @@ export const useOfferStore = create<OfferState>((set, get) => {
           if (isFirebaseInitialized && db && auth.currentUser) {
             try {
               const merchantName = useMerchantStore.getState().profile.businessName || "Unnamed Store";
+              const merchantCategory = useMerchantStore.getState().profile.businessType || "Other";
               
               const payload: any = {
                 ...offer,
                 store: merchantName,
                 merchantId: auth.currentUser.uid,
+                category: merchantCategory,
                 distance: '1 Km', // Placeholder until GPS is implemented
               };
 
