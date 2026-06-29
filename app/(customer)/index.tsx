@@ -61,29 +61,31 @@ export default function CustomerHome() {
         <Text className="text-gray-600 text-xs font-medium">Hello Khaled, Look to the next Deal.</Text>
       </View>
 
-      {/* Categories */}
-      <View className="bg-white pb-6 pt-2">
-        <ScrollView horizontal showsHorizontalScrollIndicator={true} className="pl-6" contentContainerStyle={{ paddingRight: 24 }}>
-          {categories.map((cat) => {
-            const isActive = selectedCategory === cat.name;
-            return (
-              <TouchableOpacity 
-                key={cat.name} 
-                onPress={() => setSelectedCategory(cat.name)}
-                className="items-center mr-6"
-              >
-                <View className={`w-16 h-16 rounded-3xl mb-2 items-center justify-center shadow-sm border ${isActive ? 'bg-brand border-brand shadow-brand/30' : 'bg-gray-50 border-gray-100'}`}>
-                  <Ionicons name={cat.icon as any} size={24} color={isActive ? 'white' : '#6b7280'} />
-                </View>
-                <Text className={`text-[11px] tracking-wide ${isActive ? 'text-gray-900 font-bold' : 'text-gray-500 font-medium'}`}>{cat.name}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+      {/* Feed & Categories */}
+      <ScrollView className="flex-1 pt-2" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        {/* Categories inside ScrollView so they scroll away */}
+        <View className="bg-white pb-6 mb-6 rounded-b-[32px] shadow-sm border-b border-gray-100">
+          <ScrollView horizontal showsHorizontalScrollIndicator={true} className="pl-6" contentContainerStyle={{ paddingRight: 24 }}>
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat.name;
+              return (
+                <TouchableOpacity 
+                  key={cat.name} 
+                  onPress={() => setSelectedCategory(cat.name)}
+                  className="items-center mr-6"
+                >
+                  <View className={`w-16 h-16 rounded-3xl mb-2 items-center justify-center shadow-sm border ${isActive ? 'bg-brand border-brand shadow-brand/30' : 'bg-gray-50 border-gray-100'}`}>
+                    <Ionicons name={cat.icon as any} size={24} color={isActive ? 'white' : '#6b7280'} />
+                  </View>
+                  <Text className={`text-[11px] tracking-wide ${isActive ? 'text-gray-900 font-bold' : 'text-gray-500 font-medium'}`}>{cat.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-      {/* Feed */}
-      <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        <View className="px-5">
+
         {visibleOffers.map((offer, i) => {
           const isExpired = offer.endDate && todayStr > offer.endDate;
           const isSoldOut = offer.limitType === 'Limited' && offer.limitCount && offer.claimedCount !== undefined && offer.claimedCount >= offer.limitCount;
@@ -156,6 +158,7 @@ export default function CustomerHome() {
             )}
           </View>
         )}
+        </View>
       </ScrollView>
     </View>
   );

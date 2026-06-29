@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -8,6 +8,7 @@ import { useOfferStore } from '../../../store/useOfferStore';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { usePopup } from '../../../components/ui/PopupProvider';
 import { Button } from '../../../components/ui/Button';
+import * as Linking from 'expo-linking';
 
 export default function OfferDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -221,6 +222,17 @@ export default function OfferDetails() {
               <Text className="text-gray-900 font-bold text-lg">{offer.store}</Text>
               <Text className="text-gray-500 font-medium text-sm">{offer.distance || '2 Km'} away</Text>
             </View>
+            <TouchableOpacity 
+              onPress={() => {
+                const query = encodeURIComponent(offer.store || '');
+                const mapUrl = Platform.OS === 'ios' ? `maps://?q=${query}` : `https://www.google.com/maps/search/?api=1&query=${query}`;
+                Linking.openURL(mapUrl);
+              }}
+              className="bg-brand/10 px-4 py-2.5 rounded-full flex-row items-center"
+            >
+              <Ionicons name="navigate" size={16} color="#ED1C24" />
+              <Text className="text-brand font-bold ml-1.5 text-xs uppercase tracking-wider">Directions</Text>
+            </TouchableOpacity>
           </View>
 
           <Text className="text-gray-900 font-bold text-lg mb-2">About this Deal</Text>

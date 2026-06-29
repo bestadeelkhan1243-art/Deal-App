@@ -49,9 +49,17 @@ export default function MerchantProfile() {
           </View>
           
           <Text className="text-3xl font-extrabold text-gray-900 mb-1 tracking-tight">{profile.businessName || "Unnamed Store"}</Text>
-          <View className="flex-row items-center bg-gray-50 px-3 py-1.5 rounded-full mt-2 border border-gray-100">
-            <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-            <Text className="text-gray-600 font-bold text-xs ml-1.5">Verified Merchant</Text>
+          <View className="flex-row space-x-2 mt-2">
+            <View className="flex-row items-center bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+              <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+              <Text className="text-gray-600 font-bold text-xs ml-1.5">Verified</Text>
+            </View>
+            <View className="bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 flex-row items-center">
+              <Ionicons name="finger-print-outline" size={14} color="#9ca3af" className="mr-1.5" />
+              <Text className="text-gray-500 font-bold text-xs tracking-widest uppercase">
+                ID: {user?.uid?.substring(0, 8) || '00000000'}
+              </Text>
+            </View>
           </View>
         </View>
 
