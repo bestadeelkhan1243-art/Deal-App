@@ -5,6 +5,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from "react";
 import { usePopup } from "../components/ui/PopupProvider";
 import * as ImagePicker from 'expo-image-picker';
+import { Modal } from 'react-native';
+
+const CATEGORIES = [
+  'Supermarket & Grocery',
+  'Restaurant & Cafe',
+  'Clothing & Fashion',
+  'Electronics & Gadgets',
+  'Beauty, Salon & Spa',
+  'Other'
+];
 
 export default function Index() {
   const router = useRouter();
@@ -15,6 +25,10 @@ export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
+  const [businessType, setBusinessType] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<'customer' | 'merchant'>('customer');
 
@@ -38,16 +52,21 @@ export default function Index() {
       return;
     }
 
-    if (isRegistering && selectedRole === 'merchant' && !businessName.trim()) {
-      showPopup('error', 'Business Name Required', 'Please provide your business name to register as a merchant.');
-      return;
+    if (isRegistering && selectedRole === 'merchant') {
+      if (!businessName.trim() || !businessType.trim() || !phone.trim() || !address.trim()) {
+        showPopup('error', 'Missing Information', 'Please complete all business details (Name, Type, Phone, Address) to register as a merchant.');
+        return;
+      }
     }
 
     let result;
     if (isRegistering) {
       result = await signUpWithEmail(email, password, selectedRole, {
         profilePic: profilePic || undefined,
-        businessName: selectedRole === 'merchant' ? businessName.trim() : undefined
+        businessName: selectedRole === 'merchant' ? businessName.trim() : undefined,
+        businessType: selectedRole === 'merchant' ? businessType : undefined,
+        phone: selectedRole === 'merchant' ? phone.trim() : undefined,
+        address: selectedRole === 'merchant' ? address.trim() : undefined,
       });
     } else {
       result = await loginWithEmail(email, password);
@@ -131,19 +150,55 @@ export default function Index() {
             )}
 
             {isRegistering && selectedRole === 'merchant' && (
-              <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4">
-                <Ionicons name="storefront-outline" size={20} color="#9ca3af" />
-                <TextInput 
-                  placeholder="Business Name" 
-                  placeholderTextColor="#9ca3af"
-                  value={businessName}
-                  onChangeText={setBusinessName}
-                  className="flex-1 ml-3 text-base text-gray-900 font-medium"
-                />
-              </View>
+              <>
+                <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
+                  <Ionicons name="storefront-outline" size={20} color="#9ca3af" />
+                  <TextInput 
+                    placeholder="Business Name" 
+                    placeholderTextColor="#9ca3af"
+                    value={businessName}
+                    onChangeText={setBusinessName}
+                    className="flex-1 ml-3 text-base text-gray-900 font-medium"
+                  />
+                </View>
+                
+                <TouchableOpacity 
+                  onPress={() => setIsCategoryModalVisible(true)}
+                  className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4"
+                >
+                  <Ionicons name="list-outline" size={20} color="#9ca3af" />
+                  <Text className={`flex-1 ml-3 text-base font-medium ${businessType ? 'text-gray-900' : 'text-[#9ca3af]'}`}>
+                    {businessType || 'Type of Business'}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+
+                <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
+                  <Ionicons name="call-outline" size={20} color="#9ca3af" />
+                  <TextInput 
+                    placeholder="Business Phone" 
+                    placeholderTextColor="#9ca3af"
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                    className="flex-1 ml-3 text-base text-gray-900 font-medium"
+                  />
+                </View>
+
+                <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
+                  <Ionicons name="location-outline" size={20} color="#9ca3af" />
+                  <TextInput 
+                    placeholder="Full Address / Location" 
+                    placeholderTextColor="#9ca3af"
+                    value={address}
+                    onChangeText={setAddress}
+                    className="flex-1 ml-3 text-base text-gray-900 font-medium"
+                  />
+                </View>
+              </>
             )}
 
-            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4">
+            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
               <Ionicons name="mail-outline" size={20} color="#9ca3af" />
               <TextInput 
                 placeholder="Email address" 
@@ -156,7 +211,7 @@ export default function Index() {
               />
             </View>
 
-            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4">
+            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-4">
               <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" />
               <TextInput 
                 placeholder="Password" 
@@ -195,6 +250,37 @@ export default function Index() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Category Selection Modal */}
+      <Modal visible={isCategoryModalVisible} animationType="slide" transparent={true}>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white rounded-t-3xl pt-6 pb-12 px-6 shadow-xl">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-2xl font-bold text-gray-900">Select Category</Text>
+              <TouchableOpacity onPress={() => setIsCategoryModalVisible(false)} className="bg-gray-100 p-2 rounded-full">
+                <Ionicons name="close" size={24} color="#4b5563" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {CATEGORIES.map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => {
+                    setBusinessType(cat);
+                    setIsCategoryModalVisible(false);
+                  }}
+                  className={`py-4 border-b border-gray-100 flex-row justify-between items-center ${businessType === cat ? 'bg-brand/5 px-4 rounded-xl border-b-0 mb-1' : ''}`}
+                >
+                  <Text className={`text-lg ${businessType === cat ? 'text-brand font-bold' : 'text-gray-700 font-medium'}`}>
+                    {cat}
+                  </Text>
+                  {businessType === cat && <Ionicons name="checkmark-circle" size={24} color="#ED1C24" />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }

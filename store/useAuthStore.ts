@@ -21,7 +21,7 @@ interface AuthState {
   isLoading: boolean;
   loginAs: (role: UserRole) => void;
   loginWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: UserRole }>;
-  signUpWithEmail: (email: string, password: string, role: UserRole, extraData?: { profilePic?: string, businessName?: string }) => Promise<{ success: boolean; error?: string }>;
+  signUpWithEmail: (email: string, password: string, role: UserRole, extraData?: { profilePic?: string, businessName?: string, businessType?: string, phone?: string, address?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setLoading: (isLoading: boolean) => void;
 }
@@ -116,6 +116,9 @@ export const useAuthStore = create<AuthState>((set) => {
 
         if (extraData?.profilePic) userData.profilePic = extraData.profilePic;
         if (extraData?.businessName) userData.businessName = extraData.businessName;
+        if (extraData?.businessType) userData.businessType = extraData.businessType;
+        if (extraData?.phone) userData.phone = extraData.phone;
+        if (extraData?.address) userData.address = extraData.address;
 
         await setDoc(doc(db, 'users', user.uid), userData);
         
