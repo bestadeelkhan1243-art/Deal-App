@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMerchantStore } from '../../store/useMerchantStore';
 import { useRouter } from 'expo-router';
@@ -22,6 +22,8 @@ export default function MerchantOnboarding() {
   const [businessAddress, setBusinessAddress] = useState(profile.businessAddress);
   const [businessEmail, setBusinessEmail] = useState(profile.businessEmail);
 
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const BUSINESS_CATEGORIES = ['Supermarket', 'Restaurant / Cafe', 'Electronics', 'Clothing / Fashion', 'Beauty & Spa', 'Entertainment', 'Other'];
   // Sync state if profile loads from async storage slightly later
   useEffect(() => {
     setFirstName(profile.firstName);
@@ -124,14 +126,15 @@ export default function MerchantOnboarding() {
                 className="bg-gray-50 px-4 py-3 rounded-full text-[11px] font-medium"
               />
             </View>
-            <View className="flex-1 bg-gray-50 rounded-full flex-row justify-between items-center px-4 py-3">
-              <TextInput 
-                value={businessType} onChangeText={setBusinessType}
-                placeholder="Type of business *" placeholderTextColor="#9ca3af"
-                className="flex-1 text-[11px] font-medium"
-              />
+            <TouchableOpacity 
+              className="flex-1 bg-gray-50 rounded-full flex-row justify-between items-center px-4 py-3"
+              onPress={() => setIsCategoryModalOpen(true)}
+            >
+              <Text className={`flex-1 text-[11px] font-medium ${businessType ? 'text-black' : 'text-[#9ca3af]'}`}>
+                {businessType || 'Type of business *'}
+              </Text>
               <Ionicons name="caret-down" size={12} color="#000" />
-            </View>
+            </TouchableOpacity>
           </View>
 
           <View className="flex-row space-x-4 mb-4">
@@ -193,6 +196,39 @@ export default function MerchantOnboarding() {
         </View>
 
       </View>
+
+      {/* Category Dropdown Modal */}
+      <Modal visible={isCategoryModalOpen} animationType="fade" transparent={true}>
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white w-full rounded-[24px] p-6 shadow-xl">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-xl font-bold text-gray-900">Select Business Type</Text>
+              <TouchableOpacity onPress={() => setIsCategoryModalOpen(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView className="max-h-80" showsVerticalScrollIndicator={false}>
+              {BUSINESS_CATEGORIES.map((category) => (
+                <TouchableOpacity 
+                  key={category}
+                  className={`py-4 border-b border-gray-100 flex-row justify-between items-center ${businessType === category ? 'bg-red-50/50 -mx-6 px-6' : ''}`}
+                  onPress={() => {
+                    setBusinessType(category);
+                    setIsCategoryModalOpen(false);
+                  }}
+                >
+                  <Text className={`text-base font-medium ${businessType === category ? 'text-[#e62020]' : 'text-gray-700'}`}>
+                    {category}
+                  </Text>
+                  {businessType === category && (
+                    <Ionicons name="checkmark-circle" size={20} color="#e62020" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
