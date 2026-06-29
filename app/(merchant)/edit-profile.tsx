@@ -23,6 +23,14 @@ export default function MerchantOnboarding() {
   const [businessEmail, setBusinessEmail] = useState(profile.businessEmail);
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
+
+  const COUNTRIES = [
+    'United States', 'Canada', 'United Kingdom', 'Australia', 
+    'Germany', 'France', 'Spain', 'Italy',
+    'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
+    'Egypt', 'Jordan', 'Lebanon', 'Morocco'
+  ];
   const BUSINESS_CATEGORIES = [
     'Supermarket & Grocery', 
     'Restaurant & Cafe', 
@@ -150,14 +158,15 @@ export default function MerchantOnboarding() {
           </View>
 
           <View className="flex-row space-x-4 mb-4">
-            <View className="flex-1 bg-gray-50 rounded-full flex-row justify-between items-center px-4 py-3">
-              <TextInput 
-                value={country} onChangeText={setCountry}
-                placeholder="Country *" placeholderTextColor="#9ca3af"
-                className="flex-1 text-[11px] font-medium"
-              />
+            <TouchableOpacity 
+              className="flex-1 bg-gray-50 rounded-full flex-row justify-between items-center px-4 py-3"
+              onPress={() => setIsCountryModalOpen(true)}
+            >
+              <Text className={`flex-1 text-[11px] font-medium ${country ? 'text-black' : 'text-[#9ca3af]'}`}>
+                {country || 'Country *'}
+              </Text>
               <Ionicons name="caret-down" size={12} color="#000" />
-            </View>
+            </TouchableOpacity>
             <View className="flex-1">
               <TextInput 
                 value={businessPhone} onChangeText={setBusinessPhone}
@@ -233,6 +242,39 @@ export default function MerchantOnboarding() {
                     {category}
                   </Text>
                   {businessType === category && (
+                    <Ionicons name="checkmark-circle" size={20} color="#e62020" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Country Dropdown Modal */}
+      <Modal visible={isCountryModalOpen} animationType="fade" transparent={true}>
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white w-full rounded-[24px] p-6 shadow-xl">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-xl font-bold text-gray-900">Select Country</Text>
+              <TouchableOpacity onPress={() => setIsCountryModalOpen(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView className="max-h-80" showsVerticalScrollIndicator={false}>
+              {COUNTRIES.map((c) => (
+                <TouchableOpacity 
+                  key={c}
+                  className={`py-4 border-b border-gray-100 flex-row justify-between items-center ${country === c ? 'bg-red-50/50 -mx-6 px-6' : ''}`}
+                  onPress={() => {
+                    setCountry(c);
+                    setIsCountryModalOpen(false);
+                  }}
+                >
+                  <Text className={`text-base font-medium ${country === c ? 'text-[#e62020]' : 'text-gray-700'}`}>
+                    {c}
+                  </Text>
+                  {country === c && (
                     <Ionicons name="checkmark-circle" size={20} color="#e62020" />
                   )}
                 </TouchableOpacity>
